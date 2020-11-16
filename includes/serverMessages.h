@@ -23,7 +23,8 @@ typedef enum messageTypeRequest
 typedef enum attributesToGet
 {
     METER_NUMBER = 0U,
-    METER_SERVER_VERSION
+    METER_SERVER_VERSION,
+    INSTATNTENOUS_PHASE_VOLTAGE
 } attributesToGet_t;
 
 typedef struct requestSingleGetBody
@@ -51,8 +52,8 @@ typedef enum messageTypeResponse
 
 typedef enum shortConfirmationValues
 {
-    SIMPLE_OK = 0U,
-    SIMPLE_ERROR
+    OK = 0U,
+    ERROR
 } shortConfirmationValues_t;
 
 typedef struct responseShortConfirmationBody
@@ -70,7 +71,7 @@ typedef struct responseShortConfirmation
 typedef struct responseUint32Body
 {
     uint32_t value;
-    uint32_t status;
+    uint8_t  status;
 } responseUint32Body_t;
 
 typedef struct responseUint32

@@ -29,8 +29,8 @@ typedef struct messageTypeSize
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
-uint32_t ATTRIBUTE_SERVER_VERSION = 01234567U; //8 Digit
-uint32_t ATTRIBUTE_METER_NUMBER   = 98765432U; //8 Digit
+const uint32_t ATTRIBUTE_SERVER_VERSION = 01234567U; //8 Digit
+const uint32_t ATTRIBUTE_METER_NUMBER   = 98765432U; //8 Digit
 
 const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 {
@@ -55,7 +55,7 @@ void HandleIncomeMessages( void );
 bool GetMessageFromServerQueue( void * message, long messageType );
 void HandleSingleGetRequest( void );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
-bool ResponseUint32( uint32_t valueToResponse, long responseQueue );
+bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue );
 //--------------------------------------------------------------------
 int InitMessageQueue( const char * filePath )
 {
@@ -193,11 +193,11 @@ void HandleSingleGetRequest( void )
         switch ( messageBody->attribute )
         {
             case METER_NUMBER:
-                responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, responseQueueId );
+                responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId );
                 break;
         
             case METER_SERVER_VERSION:
-                responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, responseQueueId );
+                responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId );
                 break;
         
             default:
@@ -209,43 +209,26 @@ void HandleSingleGetRequest( void )
         {
             // HANDLE IT!
         }
-
-        /*// For now siple response!
-        responseShortConfirmation_t response;
-        response.mtype = SHORT_CONFIRMATION_RESPONSE;
-
-        int responseQueueId = ((requestSingleGetBody_t*)&requestMessage.mtext[0])->queueResponseId;
-        
-        responseShortConfirmationBody_t* pMessageBody = (responseShortConfirmationBody_t*)response.mtext;
-        pMessageBody->confirmationValue = SIMPLE_OK;
-        pMessageBody->someData1 = 666;
-
-        printf("Try to RESPOND !\r\n");
-        printf("\r\n");
-        printf("Response:\n\r");
-        if ( PushMessageToQueue((void*)&response, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
-        {
-            printf("Respond properly! \r\n" );
-        }*/
     }
 }
 
-bool ResponseUint32( uint32_t valueToResponse, long responseQueue )
+bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue )
 {
-    bool status = false;
+    bool funStatus = false;
     responseUint32_t response;
     response.mtype = UINT32_RESPONSE;
 
     responseUint32Body_t * responseBody = (responseUint32Body_t*)response.mtext;
-    responseBody->value = valueToResponse;
+    responseBody->value  = valueToResponse;
+    responseBody->status = status;
     
     if ( PushMessageToQueue((void*)&response, UINT32_RESPONSE, responseQueue ) )
     {
         printf("Respond properly with UINT32_RESPONSE \r\n" );
-        status = true;
+        funStatus = true;
     }
 
-    return status;
+    return funStatus;
 }
 
 

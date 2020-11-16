@@ -15,6 +15,7 @@
 //--Defines-----------------------------------------------------------
 #define APP_PATH "meter_app.c"
 #define APP_REV  666
+
 //--------------------------------------------------------------------
 
 //--Global Variables--------------------------------------------------
@@ -36,15 +37,43 @@ int main( void )
     requestSingleGetBody_t * pBody = (requestSingleGetBody_t*)request.mtext;
     pBody->queueResponseId = appQueueId;
     pBody->attribute = METER_SERVER_VERSION;
+    printf("Send request for METER_SERVER_VERSION\r\n");
+    PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
+
+    sleep(1);
+    responseUint32_t responseUint32;
+    if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, appQueueId ) )
+    {
+        responseUint32Body_t * body = (responseUint32Body_t*)responseUint32.mtext;
+        if ( body->value ==  98765432U )
+        {
+            printf("meter app - GET proper RESPONSE! \r\n");
+        }
+        else
+        {
+            printf("GET NOT EXPECTED RESPONSE!!!\r\n");
+        }
+    }
+
+    request.mtype = SINGLE_GET_REQUEST;
+    pBody->attribute = METER_NUMBER;
     printf("Send request for METER_NUMBER\r\n");
     PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
 
     sleep(1);
-    responseUint32_t response;
-    if ( GetMessageFromQueue( (void*)&response, UINT32_RESPONSE, appQueueId ) )
+
+    if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, appQueueId ) )
     {
-        responseUint32Body_t * body = (responseUint32Body_t*)response.mtext;
-        printf("meter app - GET RESPONSE! METER_NUMBER = %i\r\n", body->value);
+        responseUint32Body_t * body = (responseUint32Body_t*)responseUint32.mtext;
+        if ( body->value ==  01234567U  )
+        {
+            printf("meter app - GET proper RESPONSE! \r\n");
+        }
+        else
+        {
+            printf("GET NOT EXPECTED RESPONSE!!!\r\n");
+        }
+        
     }
     
 }
