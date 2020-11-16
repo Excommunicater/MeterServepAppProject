@@ -35,24 +35,16 @@ int main( void )
 
     requestSingleGetBody_t * pBody = (requestSingleGetBody_t*)request.mtext;
     pBody->queueResponseId = appQueueId;
-    printf("Try To send Request!\r\n");
-    for (uint8_t i = 0U; i < 10; i++)
-    {
-        sleep(1);
-        printf("Sending Request! Attemp %i\r\n", i);
-        PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
-    }
+    pBody->attribute = METER_SERVER_VERSION;
+    printf("Send request for METER_NUMBER\r\n");
+    PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
 
-    responseShortConfirmation_t response;
-    for (uint8_t i = 0U; i < 10; i++)
+    sleep(1);
+    responseUint32_t response;
+    if ( GetMessageFromQueue( (void*)&response, UINT32_RESPONSE, appQueueId ) )
     {
-        sleep(1);
-        printf("WAIT FOR RESPONSE! Attemp %i\r\n", i);
-        if ( GetMessageFromQueue( (void*)&response, SHORT_CONFIRMATION_RESPONSE, appQueueId ) )
-        {
-            responseShortConfirmationBody_t * body = (responseShortConfirmationBody_t*)response.mtext;
-            printf("meter app - GET RESPONSE! confValue = %i someData = %i \r\n", body->confirmationValue, body->someData1);
-            break;
-        }
+        responseUint32Body_t * body = (responseUint32Body_t*)response.mtext;
+        printf("meter app - GET RESPONSE! METER_NUMBER = %i\r\n", body->value);
     }
+    
 }

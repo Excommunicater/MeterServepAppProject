@@ -20,11 +20,17 @@ typedef enum messageTypeRequest
     RESET_EVENT_REQUEST
 } messageTypeRequest_t;
 
+typedef enum attributesToGet
+{
+    METER_NUMBER = 0U,
+    METER_SERVER_VERSION
+} attributesToGet_t;
+
 typedef struct requestSingleGetBody
 {
-    int queueResponseId;
-    uint32_t someData1;
-    uint32_t someData2;
+    int queueResponseId;         //< To this queue ID response shall be sent
+    uint32_t instance;           //< Phaze number - if attribute not phaze related - just ignore it!
+    attributesToGet_t attribute; //< Attribute number to get
 } requestSingleGetBody_t;
 
 typedef struct requestSingleGet
@@ -61,11 +67,18 @@ typedef struct responseShortConfirmation
     char mtext[sizeof(responseShortConfirmationBody_t)];
 } responseShortConfirmation_t;
 
-typedef struct responseUint32
+typedef struct responseUint32Body
 {
     uint32_t value;
     uint32_t status;
+} responseUint32Body_t;
+
+typedef struct responseUint32
+{
+    long mtype;
+    char mtext[sizeof(responseUint32Body_t)];
 } responseUint32_t;
+
 
 typedef struct responseUint64
 {
