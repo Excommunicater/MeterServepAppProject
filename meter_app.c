@@ -51,14 +51,14 @@ int main( void )
         }
         else
         {
-            printf("GET NOT EXPECTED RESPONSE!!!\r\n");
+            printf("GET NOT EXPECTED RESPONSE!!! response = %i\r\n", body->value);
         }
     }
 
     sleep(1);
 
     request.mtype = SINGLE_GET_REQUEST;
-    pBody->attribute = INSTATNTENOUS_PHASE_VOLTAGE;
+    pBody->attribute = METER_NUMBER;
     printf("Send request for METER_NUMBER\r\n");
     PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
 
@@ -96,7 +96,7 @@ int main( void )
         } 
         else
         {
-            printf("meter app - bad status received... status = %i\r\n", body->status);
+            printf("meter app - bad status received... status = %i; value + %i\r\n", body->status, body->value);
         }
         
     }
@@ -116,8 +116,60 @@ int main( void )
         responseUint32Body_t * body = (responseUint32Body_t*)responseUint32.mtext;
         if ( body->status == BAD_INSTANCE )
         {
-            printf("meter app - GET expected RESPONSE!\r\n");
+            printf("meter app - GET expected RESPONSE! status = %i; value + %i\r\n", body->status, body->value);
         } 
+        else
+        {
+            printf("meter app - GET unexpected Response! status = %i; value + %i\r\n", body->status, body->value);
+        }
+        
     }
-    
+
+    sleep(1);
+
+    request.mtype = SINGLE_GET_REQUEST;
+    pBody->attribute = INSTATNTENOUS_PHASE_CURRENT;
+    pBody->instance = 2U;
+    printf("Send request for INSTATNTENOUS_PHASE_CURRENT. Existing instance!\r\n");
+    PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
+
+    sleep(1);
+
+    if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, appQueueId ) )
+    {
+        responseUint32Body_t * body = (responseUint32Body_t*)responseUint32.mtext;
+        if ( body->status == OK )
+        {
+            printf("meter app - GET proper RESPONSE!. Current = %i\r\n", body->value);
+        } 
+        else
+        {
+            printf("meter app - bad status received... status = %i; value = %i\r\n", body->status, body->value);
+        }
+        
+    }
+
+    sleep(1);
+
+    request.mtype = SINGLE_GET_REQUEST;
+    pBody->attribute = INSTATNTENOUS_PHASE_CURRENT;
+    pBody->instance = 102U;
+    printf("Send request for INSTATNTENOUS_PHASE_CURRENT. Existing instance!\r\n");
+    PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
+
+    sleep(1);
+
+    if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, appQueueId ) )
+    {
+        responseUint32Body_t * body = (responseUint32Body_t*)responseUint32.mtext;
+        if ( body->status == BAD_INSTANCE )
+        {
+            printf("meter app - GET expected RESPONSE! status = %i; value + %i\r\n", body->status, body->value);
+        } 
+        else
+        {
+            printf("meter app - GET unexpected Response! status = %i; value + %i\r\n", body->status, body->value);
+        }
+        
+    }
 }

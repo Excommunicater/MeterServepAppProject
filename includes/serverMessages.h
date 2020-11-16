@@ -24,7 +24,8 @@ typedef enum attributesToGet
 {
     METER_NUMBER = 0U,
     METER_SERVER_VERSION,
-    INSTATNTENOUS_PHASE_VOLTAGE
+    INSTATNTENOUS_PHASE_VOLTAGE,
+    INSTATNTENOUS_PHASE_CURRENT
 } attributesToGet_t;
 
 typedef struct requestSingleGetBody

@@ -58,6 +58,7 @@ void HandleSingleGetRequest( void );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
 bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue );
 uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase );
+uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase );
 //--------------------------------------------------------------------
 int InitMessageQueue( const char * filePath )
 {
@@ -207,6 +208,15 @@ void HandleSingleGetRequest( void )
                 responseStatus = ResponseUint32( returnValue, status, responseQueueId );
                 break;
             }
+
+            case INSTATNTENOUS_PHASE_CURRENT:
+            {
+                uint8_t  status = 0U;
+                uint32_t returnValue = GetInstatntenousPhaseCurrent( &status, instance );
+                printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT instance = %i value = %i status %i\r\n", instance, returnValue, status);
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+                break;
+            }
         
             default:
                 // Attribute not supported
@@ -260,13 +270,34 @@ uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
     return response;
 }
 
+uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
+{
+    uint32_t response = 0U;
+
+    if ( status == (uint8_t*)NULL )
+    {
+        ReportAndExit("GetInstatntenousPhaseCurrent - passed NULL argument!");
+    }
+
+    if ( phase <= PHASE_CNT )
+    {
+        response = lastReadHardwareRegister.per_phase[phase].i;
+        *status  = OK;
+    }
+    else
+    {
+        *status = BAD_INSTANCE;
+    }
+    return response;
+}
+
 
 void ReadStructFromDev( meter_hw_registers_t * pMeterReg )
 {
     int fifoFile = open(DEV_FILE, O_RDONLY);
     read(fifoFile, pMeterReg, sizeof(meter_hw_registers_t)); 
     close(fifoFile);
-    printf("Voltage Angle[1] = %i\r\n", pMeterReg->voltage_angles[1]);
+    printf("V[2] = %i A[2] = %i\r\n", pMeterReg->per_phase[2].v, pMeterReg->per_phase[2].i);
 }
 
 void InitFifo( void )
