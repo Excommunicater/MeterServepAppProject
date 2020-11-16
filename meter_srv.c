@@ -46,6 +46,7 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 
 //--Global Variables--------------------------------------------------
 int serverReceiveQueueId = 0;
+meter_hw_registers_t lastReadHardwareRegister;
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
@@ -56,6 +57,7 @@ bool GetMessageFromServerQueue( void * message, long messageType );
 void HandleSingleGetRequest( void );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
 bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue );
+uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase );
 //--------------------------------------------------------------------
 int InitMessageQueue( const char * filePath )
 {
@@ -92,14 +94,9 @@ void InitServer( void )
 void StartServer( void )
 {
     printf("Meter_srv is running...\r\n");
-    #ifndef DEBUG
-    meter_hw_registers_t hwRegs;
-    #endif
     while (1)
     {
-        #ifndef DEBUG
-        ReadStructFromDev( &hwRegs );
-        #endif
+        ReadStructFromDev( &lastReadHardwareRegister );
         HandleIncomeMessages();
         usleep(10000); // each secunde
     }
@@ -190,7 +187,9 @@ void HandleSingleGetRequest( void )
         bool responseStatus = false;
         requestSingleGetBody_t * messageBody = (requestSingleGetBody_t*)requestMessage.mtext;
         long responseQueueId = messageBody->queueResponseId;
-        switch ( messageBody->attribute )
+        attributesToGet_t attribute = messageBody->attribute;
+        uint8_t instance = messageBody->instance;
+        switch ( attribute )
         {
             case METER_NUMBER:
                 responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId );
@@ -199,6 +198,15 @@ void HandleSingleGetRequest( void )
             case METER_SERVER_VERSION:
                 responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId );
                 break;
+
+            case INSTATNTENOUS_PHASE_VOLTAGE:
+            {
+                uint8_t  status = 0U;
+                uint32_t returnValue = GetInstatntenousPhaseVoltage( &status, instance );
+                printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE instance = %i value = %i status %i\r\n", instance, returnValue, status);
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+                break;
+            }
         
             default:
                 // Attribute not supported
@@ -229,6 +237,27 @@ bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueu
     }
 
     return funStatus;
+}
+
+uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
+{
+    uint32_t response = 0U;
+
+    if ( status == (uint8_t*)NULL )
+    {
+        ReportAndExit("GetInstatntenousPhaseVoltage - passed NULL argument!");
+    }
+
+    if ( phase <= PHASE_CNT )
+    {
+        response = lastReadHardwareRegister.per_phase[phase].v;
+        *status  = OK;
+    }
+    else
+    {
+        *status = BAD_INSTANCE;
+    }
+    return response;
 }
 
 
