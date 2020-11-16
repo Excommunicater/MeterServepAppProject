@@ -1,0 +1,10 @@
+# Do not track any output files
+*.o
+
+# Do not track any executables
+appStart
+metering_hw
+serverStart
+
+# Do not track generated files
+meterhw.fifo
