@@ -1,17 +1,64 @@
-# Do not track any output files
 out/*
-out/build/*
-*.o
-
-# Do not track any executables
-appStart
-metering_hw
-serverStart
-ServerStart
-meter_app
 
 # Do not track generated files
 meterhw.fifo
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+appStart
+metering_hw
+serverStart
+meter_app
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
 
 # CMake ignores
 CMakeLists.txt.user
@@ -25,3 +72,4 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+out/build/ServerStart
