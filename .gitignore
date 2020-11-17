@@ -5,6 +5,7 @@
 appStart
 metering_hw
 serverStart
+meter_app
 
 # Do not track generated files
 meterhw.fifo

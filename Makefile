@@ -20,6 +20,7 @@ serverStart: serverStart.o meter_srv.o
 
 appStart: meter_app.o meter_srv.o 
 	$(CC) meter_app.o meter_srv.o -o appStart
+	$(CC) meter_app.o meter_srv.o -o meter_app
 
 meter_svr.o: meter_srv.c
 	$(CC) $(CFLAGS) meter_srv.c

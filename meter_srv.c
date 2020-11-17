@@ -297,7 +297,7 @@ void ReadStructFromDev( meter_hw_registers_t * pMeterReg )
     int fifoFile = open(DEV_FILE, O_RDONLY);
     read(fifoFile, pMeterReg, sizeof(meter_hw_registers_t)); 
     close(fifoFile);
-    printf("V[2] = %i A[2] = %i\r\n", pMeterReg->per_phase[2].v, pMeterReg->per_phase[2].i);
+    printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", pMeterReg->per_phase[2].v, pMeterReg->per_phase[2].i, pMeterReg->per_phase[2].ai,  pMeterReg->per_phase[2].ae);
 }
 
 void InitFifo( void )
