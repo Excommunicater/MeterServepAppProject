@@ -11,20 +11,22 @@
  * compile with: gcc metering_hw.c -o metering_hw
  *
  * this "emulator" is badly written on purpose, feel free to fix it
+ * Hope I fixed it XD
  */
 
 
 int main() {
+
     struct timespec tnow, tstart;
     meter_hw_registers_t hwregs;
 
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     mkfifo(DEV_FILE, 0666);
-    int fd = open(DEV_FILE, O_WRONLY);
-
+    
 
     while (1)
     {
+        int fd = open(DEV_FILE, O_WRONLY);
         clock_gettime(CLOCK_MONOTONIC, &tnow);
         const int32_t secs_since_start = tnow.tv_sec - tstart.tv_sec;
 
@@ -43,11 +45,12 @@ int main() {
         hwregs.current_angles[0] = 240 - hwregs.current_angles[2];
 
         write(fd, &hwregs, sizeof(hwregs));
+        close(fd);
 
         usleep(200 * 1000); // new data approximately 5 times a second
     }
 
-    close(fd);
+    
     return 0;
 }
 

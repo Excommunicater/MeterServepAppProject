@@ -15,9 +15,9 @@
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-#include "includes/metering_interface.h" // DEV_FILE
-#include "includes/serverMessages.h"     //
-#include "includes/meter_srv.h"     //
+#include "../MeterHardware/metering_interface.h" // DEV_FILE
+#include "serverMessages.h"     //
+#include "serverUtils.h"        //
 //--------------------------------------------------------------------
 
 //--Local Structures--------------------------------------------------
@@ -46,12 +46,12 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 
 //--Global Variables--------------------------------------------------
 int serverReceiveQueueId = 0;
-meter_hw_registers_t lastReadHardwareRegister;
+//meter_hw_registers_t lastReadHardwareRegister;
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
-void InitFifo( void );
-void ReadStructFromDev( meter_hw_registers_t * pMeterReg );
+//void InitFifo( void );
+//void ReadStructFromDev( meter_hw_registers_t * pMeterReg );
 void HandleIncomeMessages( void );
 bool GetMessageFromServerQueue( void * message, long messageType );
 void HandleSingleGetRequest( void );
@@ -88,7 +88,7 @@ int InitServerMessageQueue( void )
 
 void InitServer( void )
 {
-    InitFifo();
+    //InitFifo();
     serverReceiveQueueId = InitServerMessageQueue();
 }
 
@@ -97,7 +97,7 @@ void StartServer( void )
     printf("Meter_srv is running...\r\n");
     while (1)
     {
-        ReadStructFromDev( &lastReadHardwareRegister );
+        //ReadStructFromDev( &lastReadHardwareRegister );
         HandleIncomeMessages();
         usleep(10000); // each secunde
     }
@@ -258,7 +258,7 @@ uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
         ReportAndExit("GetInstatntenousPhaseVoltage - passed NULL argument!");
     }
 
-    if ( phase <= PHASE_CNT )
+    /*if ( phase <= PHASE_CNT )
     {
         response = lastReadHardwareRegister.per_phase[phase].v;
         *status  = OK;
@@ -266,7 +266,7 @@ uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
     else
     {
         *status = BAD_INSTANCE;
-    }
+    }*/
     return response;
 }
 
@@ -279,7 +279,7 @@ uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
         ReportAndExit("GetInstatntenousPhaseCurrent - passed NULL argument!");
     }
 
-    if ( phase <= PHASE_CNT )
+    /*if ( phase <= PHASE_CNT )
     {
         response = lastReadHardwareRegister.per_phase[phase].i;
         *status  = OK;
@@ -287,12 +287,12 @@ uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
     else
     {
         *status = BAD_INSTANCE;
-    }
+    }*/
     return response;
 }
 
 
-void ReadStructFromDev( meter_hw_registers_t * pMeterReg )
+/*void ReadStructFromDev( meter_hw_registers_t * pMeterReg )
 {
     int fifoFile = open(DEV_FILE, O_RDONLY);
     read(fifoFile, pMeterReg, sizeof(meter_hw_registers_t)); 
@@ -304,3 +304,4 @@ void InitFifo( void )
 {
     mkfifo(DEV_FILE, 0666);
 }
+*/
