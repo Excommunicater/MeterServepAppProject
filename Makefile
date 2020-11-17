@@ -38,4 +38,4 @@ meter_app.o: meter_app.c
 	$(CC) $(CFLAGS) meter_app.c
 
 clean:
-	rm -rf *.o metering_hw serverStart appStart meterhw.fifo
+	rm -rf *.o metering_hw serverStart appStart meterhw.fifo meter_app
