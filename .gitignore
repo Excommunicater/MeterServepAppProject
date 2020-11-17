@@ -1,10 +1,13 @@
 # Do not track any output files
+out/*
+out/build/*
 *.o
 
 # Do not track any executables
 appStart
 metering_hw
 serverStart
+ServerStart
 meter_app
 
 # Do not track generated files

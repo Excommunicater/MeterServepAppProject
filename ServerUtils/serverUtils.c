@@ -15,7 +15,7 @@
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-//#include "metering_interface.h" // DEV_FILE
+#include "../MeterHardware/metering_interface.h" // DEV_FILE
 #include "serverMessages.h"     //
 #include "serverUtils.h"        //
 //--------------------------------------------------------------------
