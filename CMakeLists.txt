@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(PhoenixRozmowaProject)
+set(thisProject PhoenixRozmowaProject)
+
+project(${thisProject} )
 
 # Where to store executables and libraries??
 #set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

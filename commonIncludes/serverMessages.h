@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define PROJECT_ID 123
-#define SERVER_PATH_NAME  "./includes/serverMessages.h"
+#define SERVER_PATH_NAME  "./commonIncludes/serverMessages.h"
 
 #define NUMBER_OF_REQUEST_TYPES  4
 #define NUMBER_OF_RESPONSE_TYPES 3
@@ -31,7 +31,7 @@ typedef enum attributesToGet
 typedef struct requestSingleGetBody
 {
     int queueResponseId;         //< To this queue ID response shall be sent
-    uint8_t instance;           //< Phaze number - if attribute not phaze related - just ignore it!
+    uint8_t instance;            //< Phaze number - if attribute not phaze related - just ignore it!
     attributesToGet_t attribute; //< Attribute number to get
 } requestSingleGetBody_t;
 
