@@ -1,29 +1,18 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(ServerStart)
+project(PhoenixRozmowaProject)
 
-enable_testing()
+# Where to store executables and libraries??
+#set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_executable(${PROJECT_NAME} serverStart.c )
-
+# Libraries to build
 add_subdirectory(ServerUtils)
+
+# Separate projects to build
+add_subdirectory(ServerStart)
 add_subdirectory(MeterHardware)
-add_subdirectory(test)
+add_subdirectory(ApplicationStart)
+
+# Tests and test framework
 add_subdirectory(external/googletest)
-
-target_include_directories(${PROJECT_NAME} 
-    PUBLIC ServerUtils 
-    PUBLIC MeterHardware
-)
-
-target_link_directories(${PROJECT_NAME} 
-    PRIVATE ServerUtils
-    PRIVATE MeterHardware
-)
-
-target_link_libraries(${PROJECT_NAME} 
-    serverUtils 
-    meteringHw
-)
-
-
+add_subdirectory(test)

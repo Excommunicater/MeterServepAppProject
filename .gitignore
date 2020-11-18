@@ -1,4 +1,5 @@
 out/*
+build/*
 
 # Do not track generated files
 meterhw.fifo
@@ -42,7 +43,7 @@ meterhw.fifo
 *.hex
 appStart
 metering_hw
-serverStart
+out/Build/ServerStart
 meter_app
 
 # Debug files

@@ -1,11 +1,16 @@
-project(ExampleTest)
-add_executable(${PROJECT_NAME} test_test.cpp )
+cmake_minimum_required(VERSION 3.16.3)
 
-target_link_libraries(${PROJECT_NAME} 
+set(thisProject exampleTest)
+
+add_executable(${thisProject} test_test.cpp )
+
+target_link_libraries(${thisProject} 
     gtest_main
+    serverUtils
 )
 
+
 add_test(
-    NAME ${PROJECT_NAME} 
-    COMMAND ${PROJECT_NAME} 
+    NAME ${thisProject} 
+    COMMAND ${thisProject} 
 )
