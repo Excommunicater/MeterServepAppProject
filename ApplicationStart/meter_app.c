@@ -8,8 +8,8 @@
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-#include "includes/serverMessages.h"     //
-#include "includes/meter_srv.h"  
+#include "../ServerUtils/serverUtils.h"     //
+#include "../ServerUtils/serverMessages.h" 
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
