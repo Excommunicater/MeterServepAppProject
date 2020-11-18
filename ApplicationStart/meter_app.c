@@ -9,11 +9,11 @@
 
 //--Local includes----------------------------------------------------
 #include "../ServerUtils/serverUtils.h"     //
-#include "../ServerUtils/serverMessages.h" 
+#include "../commonIncludes/serverMessages.h" 
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
-#define APP_PATH "meter_app.c"
+#define APP_PATH "./ApplicationStart/meter_app.c"
 #define APP_REV  666
 
 //--------------------------------------------------------------------
