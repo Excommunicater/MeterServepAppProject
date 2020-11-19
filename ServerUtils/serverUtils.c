@@ -141,11 +141,9 @@ bool GetMessageFromQueue( void * message, long messageType, int queueId )
             {
                 ReportAndExit("Unexpected error while getting message from queue...\r\n");
             }
-            //printf("Do not find any messages\r\n");
         }
         else
         {
-            printf("Get message!\r\n");
             status = true;
         }
     }
@@ -160,12 +158,10 @@ bool PushMessageToQueue( void * message, long messageType, int queueId )
     {
         if ( msgsnd(queueId, message, GetMessageSize( messageType ), IPC_NOWAIT) == -1) 
         {
-            printf("queue id = %i\r\n", queueId);
             ReportAndExit("Unexpected error pushing message to queue...");
         }
         else
         {
-            printf("Message sent! queueId = %i messageType = %li\r\n", queueId, messageType );
             status = true;
         }
     }
