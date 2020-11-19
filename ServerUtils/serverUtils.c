@@ -26,6 +26,12 @@ typedef struct messageTypeSize
     long   type;
     size_t size;
 } messageTypeSize_t;
+
+typedef enum angleValue
+{
+    VOLTAGE = 0,
+    CURRENT
+} angleValue_t;
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
@@ -59,6 +65,7 @@ bool PushMessageToQueue( void * message, long messageType, int queueId );
 bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue );
 uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase );
 uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase );
+uint32_t GetPhaseAngle( uint8_t * status, uint8_t phase, angleValue_t valueToGet );
 //--------------------------------------------------------------------
 int InitMessageQueue( const char * filePath )
 {
@@ -217,6 +224,21 @@ void HandleSingleGetRequest( void )
                 responseStatus = ResponseUint32( returnValue, status, responseQueueId );
                 break;
             }
+
+            case VOLTAGE_PHASE_ANGLE:
+            {
+                int8_t   status = 0U;
+                uint32_t returnValue = GetPhaseAngle( &status, instance, VOLTAGE );
+                printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE instance = %i value = %i status %i\r\n", instance, returnValue, status);
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+            }
+            case CURRNT_PHASE_ANGLE:
+            {
+                int8_t   status = 0U;
+                uint32_t returnValue = GetPhaseAngle( &status, instance, CURRENT );
+                printf("HandleSingleGetRequest::CURRNT_PHASE_ANGLE instance = %i value = %i status %i\r\n", instance, returnValue, status);
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+            }           
         
             default:
                 // Attribute not supported
@@ -282,6 +304,37 @@ uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
     if ( phase <= PHASE_CNT )
     {
         response = lastReadHardwareRegister.per_phase[phase].i;
+        *status  = OK;
+    }
+    else
+    {
+        *status = BAD_INSTANCE;
+    }
+    return response;
+}
+
+uint32_t GetPhaseAngle( uint8_t * status, uint8_t phase, angleValue_t valueToGet )
+{
+    uint32_t response = 0U;
+    if ( status == (uint8_t*)NULL )
+    {
+        ReportAndExit("GetPhaseAngle - passed NULL argument!");
+    }
+    if ( ( valueToGet > CURRENT ) || ( valueToGet < VOLTAGE ) )
+    {
+        ReportAndExit("GetPhaseAngle - passed bad value to get!");
+    }
+
+    if ( phase <= PHASE_CNT )
+    {
+        if ( valueToGet == VOLTAGE )
+        {
+            response = lastReadHardwareRegister.voltage_angles[phase];
+        }
+        else
+        {
+            response = lastReadHardwareRegister.current_angles[phase];
+        }
         *status  = OK;
     }
     else
