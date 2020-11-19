@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-set(thisProject exampleTest)
+set(thisProject test)
+set(tests serverUtils.cpp)
 
-add_executable(${thisProject} test_test.cpp )
+add_executable(${thisProject} ${tests} )
 
 target_link_libraries(${thisProject} 
     gtest_main
