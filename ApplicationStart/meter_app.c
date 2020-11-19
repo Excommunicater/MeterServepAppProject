@@ -23,7 +23,8 @@ typedef enum testResponses
     TEST_ERROR_SENDING_REQUEST,
     TEST_ERROR_RECIVE_RESPONSE,
     TEST_ERROR_NOT_EXPECTED_VALUE,
-    TEST_ERROR_NOT_EXPECTED_STATUS
+    TEST_ERROR_NOT_EXPECTED_STATUS,
+    TEST_ERROR_SEGMENTATION
 } testResponses_t;
 
 typedef struct wholeTestResponse
@@ -44,16 +45,20 @@ testResponses_t TestSingleRequestWithUint32Response(
     int serverQueueId,
     bool validateResponseValue, 
     uint32_t expectedResponse,
-    uint8_t expectedStatus );
+    uint8_t expectedStatus,
+    uint32_t requestId );
 void PrintTestResults( wholeTestResponse_t result );
 void PrintTestResponse( testResponses_t response );
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse );
+void CleanAppQueue( int queueId );
 //--------------------------------------------------------------------
 
 int main( void )
 {
     int serverQueueId = InitServerMessageQueue();
     int appQueueId = InitMessageQueue( APP_PATH );
+    CleanAppQueue(appQueueId);
+    uint32_t requestId = 1U;
 
     wholeTestResponse_t wholeTestResponse = {0};
 
@@ -67,8 +72,10 @@ int main( void )
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
         01234567U,              //< Expected Response
-        OK                      //< Expected response status
+        OK,                     //< Expected response status
+        requestId               //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 2 - Request for Meter Number
@@ -79,8 +86,10 @@ int main( void )
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
         98765432U,              //< Expected Response
-        OK                      //< Expected response status
+        OK,                     //< Expected response status
+        requestId               //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 3 - Request for INSTATNTENOUS_PHASE_VOLTAGE - Proper instance
@@ -91,8 +100,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        OK                              //< Expected response status
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 4 - Request for INSTATNTENOUS_PHASE_VOLTAGE - Bad instance
@@ -103,8 +114,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        BAD_INSTANCE                    //< Expected response status
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 5 - Request for INSTATNTENOUS_PHASE_CURRENT - Proper instance
@@ -115,8 +128,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        OK                              //< Expected response status
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 6 - Request for INSTATNTENOUS_PHASE_CURRENT - Bad instance
@@ -127,8 +142,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        BAD_INSTANCE                    //< Expected response status
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 7 - Request for VOLTAGE_PHASE_ANGLE - Proper instance
@@ -139,8 +156,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        OK                              //< Expected response status
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 8 - Request for VOLTAGE_PHASE_ANGLE - Bad instance
@@ -151,8 +170,10 @@ int main( void )
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
         0,                              //< No matter
-        BAD_INSTANCE                    //< Expected response status
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
     );
+    requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
 
@@ -167,7 +188,8 @@ testResponses_t TestSingleRequestWithUint32Response(
     int serverQueueId,
     bool validateResponseValue, 
     uint32_t expectedResponse,
-    uint8_t expectedStatus )
+    uint8_t expectedStatus,
+    uint32_t requestId )
 {
     bool operationStatus = false;
     requestSingleGet_t request;
@@ -177,6 +199,7 @@ testResponses_t TestSingleRequestWithUint32Response(
 
     //--Set Request Message-----------------------------------------------
     request.mtype                   = SINGLE_GET_REQUEST;
+    pRequestBody->requestId        = requestId;
     pRequestBody->attribute         = attribute;
     pRequestBody->instance          = instance;
     pRequestBody->queueResponseId   = responseQueueId;
@@ -198,6 +221,10 @@ testResponses_t TestSingleRequestWithUint32Response(
     if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, responseQueueId ) )
     {
         pResponseBody = (responseUint32Body_t*)responseUint32.mtext;
+        if( pResponseBody->requestId != requestId )
+        {
+            return TEST_ERROR_SEGMENTATION;
+        }
 
         if ( ( validateResponseValue == true ) && ( pResponseBody->value != expectedResponse ) )
         {
@@ -255,9 +282,22 @@ void PrintTestResponse( testResponses_t response )
         case TEST_ERROR_NOT_EXPECTED_STATUS:
             printf("TEST_ERROR_NOT_EXPECTED_STATUS\r\n");
             break;
-
+        case TEST_ERROR_SEGMENTATION:
+            printf("TEST_ERROR_SEGMENTATION\r\n");
+            break;
         default:
             printf("Some strange response...\r\n");
             break;
+    }
+}
+
+void CleanAppQueue( int queueId )
+{
+    uint32_t messagesInQueue = NumberOfMessagesInQueue(queueId);
+    //Temporary solution - have to get all types of responses....
+    for (uint32_t i = 0U; i < messagesInQueue; i++)
+    {
+        responseUint32_t responseUint32;
+        GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
     }
 }

@@ -32,6 +32,7 @@ typedef enum attributesToGet
 
 typedef struct requestSingleGetBody
 {
+    uint32_t requestId;          //< Id of partiqular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number - if attribute not phaze related - just ignore it!
     attributesToGet_t attribute; //< Attribute number to get
@@ -62,6 +63,7 @@ typedef enum shortConfirmationValues
 
 typedef struct responseShortConfirmationBody
 {
+        uint32_t requestId; 
     shortConfirmationValues_t confirmationValue;
     uint32_t someData1;
 } responseShortConfirmationBody_t;
@@ -74,6 +76,7 @@ typedef struct responseShortConfirmation
 
 typedef struct responseUint32Body
 {
+    uint32_t requestId; 
     uint32_t value;
     uint8_t  status;
 } responseUint32Body_t;
@@ -87,6 +90,7 @@ typedef struct responseUint32
 
 typedef struct responseUint64
 {
+    uint32_t requestId; 
     uint64_t value;
     uint32_t status;
 } responseUint64_t;

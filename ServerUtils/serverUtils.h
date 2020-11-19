@@ -13,5 +13,6 @@ void ReportAndExit( const char* errorMsg );
 bool GetMessageFromQueue( void * message, long messageType, int queueId );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
 size_t GetMessageSize( long type );
+uint32_t NumberOfMessagesInQueue( int queueId );
 
 #endif // METER_SRV_H
