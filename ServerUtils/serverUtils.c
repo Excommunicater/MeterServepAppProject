@@ -11,7 +11,7 @@
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
-
+//#define DEBUG_PRINTOUT
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
@@ -26,6 +26,12 @@ typedef struct messageTypeSize
     long   type;
     size_t size;
 } messageTypeSize_t;
+
+typedef enum angleValue
+{
+    VOLTAGE = 0,
+    CURRENT
+} angleValue_t;
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
@@ -45,6 +51,7 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 //--------------------------------------------------------------------
 
 //--Global Variables--------------------------------------------------
+bool isQueueCreated = false;
 int serverReceiveQueueId = 0;
 meter_hw_registers_t lastReadHardwareRegister;
 //--------------------------------------------------------------------
@@ -56,9 +63,11 @@ void HandleIncomeMessages( void );
 bool GetMessageFromServerQueue( void * message, long messageType );
 void HandleSingleGetRequest( void );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
-bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue );
+bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue, uint32_t requestId );
 uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase );
 uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase );
+uint32_t GetPhaseAngle( uint8_t * status, uint8_t phase, angleValue_t valueToGet );
+void RemoveQueue( int queueId );
 //--------------------------------------------------------------------
 int InitMessageQueue( const char * filePath )
 {
@@ -76,6 +85,7 @@ int InitMessageQueue( const char * filePath )
         ReportAndExit("Couldn't get queue id...\r\n");
     }
     printf("Properly generated queue ID! ID: %i\r\n", queueId);
+    isQueueCreated = true;
 
     return queueId;
 
@@ -111,6 +121,7 @@ void ReportAndExit( const char* errorMsg )
 
 void HandleIncomeMessages( void )
 {
+
     HandleSingleGetRequest();
 }
 
@@ -121,8 +132,8 @@ bool GetMessageFromServerQueue( void * message, long messageType )
 
 bool GetMessageFromQueue( void * message, long messageType, int queueId )
 {
-    bool status = false;
-    if ( message != (void*)NULL )
+    bool status = (bool)( NumberOfMessagesInQueue( queueId ) != 0U );
+    if ( ( message != (void*)NULL ) && status )
     {
         if ( msgrcv(queueId, 
                     message, 
@@ -134,11 +145,9 @@ bool GetMessageFromQueue( void * message, long messageType, int queueId )
             {
                 ReportAndExit("Unexpected error while getting message from queue...\r\n");
             }
-            //printf("Do not find any messages\r\n");
         }
         else
         {
-            printf("Get message!\r\n");
             status = true;
         }
     }
@@ -153,12 +162,10 @@ bool PushMessageToQueue( void * message, long messageType, int queueId )
     {
         if ( msgsnd(queueId, message, GetMessageSize( messageType ), IPC_NOWAIT) == -1) 
         {
-            printf("queue id = %i\r\n", queueId);
             ReportAndExit("Unexpected error pushing message to queue...");
         }
         else
         {
-            printf("Message sent! queueId = %i messageType = %li\r\n", queueId, messageType );
             status = true;
         }
     }
@@ -183,29 +190,38 @@ size_t GetMessageSize( long type )
 void HandleSingleGetRequest( void )
 {
     requestSingleGet_t requestMessage;
-    if ( GetMessageFromServerQueue( (void *)&requestMessage, SINGLE_GET_REQUEST ) )
+    while ( GetMessageFromServerQueue( (void *)&requestMessage, SINGLE_GET_REQUEST ) )
     {
         bool responseStatus = false;
         requestSingleGetBody_t * messageBody = (requestSingleGetBody_t*)requestMessage.mtext;
         long responseQueueId = messageBody->queueResponseId;
+        uint32_t requestId = messageBody->requestId;
         attributesToGet_t attribute = messageBody->attribute;
         uint8_t instance = messageBody->instance;
         switch ( attribute )
         {
             case METER_NUMBER:
-                responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::METER_NUMBER rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_METER_NUMBER, OK);
+                #endif
+                responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId, requestId );
                 break;
         
             case METER_SERVER_VERSION:
-                responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::METER_SERVER_VERSION rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_SERVER_VERSION, OK);
+                #endif
+                responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId, requestId );
                 break;
 
             case INSTATNTENOUS_PHASE_VOLTAGE:
             {
                 uint8_t  status = 0U;
                 uint32_t returnValue = GetInstatntenousPhaseVoltage( &status, instance );
-                printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE instance = %i value = %i status %i\r\n", instance, returnValue, status);
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n", requestId,instance, returnValue, status);
+                #endif
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
                 break;
             }
 
@@ -213,10 +229,33 @@ void HandleSingleGetRequest( void )
             {
                 uint8_t  status = 0U;
                 uint32_t returnValue = GetInstatntenousPhaseCurrent( &status, instance );
-                printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT instance = %i value = %i status %i\r\n", instance, returnValue, status);
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                #endif
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
                 break;
             }
+
+            case VOLTAGE_PHASE_ANGLE:
+            {
+                int8_t   status = 0U;
+                uint32_t returnValue = GetPhaseAngle( &status, instance, VOLTAGE );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                #endif
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                break;
+            }
+            case CURRNT_PHASE_ANGLE:
+            {
+                int8_t   status = 0U;
+                uint32_t returnValue = GetPhaseAngle( &status, instance, CURRENT );
+                #ifdef DEBUG_PRINTOUT
+                    printf("HandleSingleGetRequest::CURRNT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                #endif
+                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                break;
+            }           
         
             default:
                 // Attribute not supported
@@ -225,24 +264,29 @@ void HandleSingleGetRequest( void )
 
         if ( !responseStatus )
         {
-            // HANDLE IT!
+            #ifdef DEBUG_PRINTOUT
+                printf("ERROR DURING RESPONDING WITH UINT32_T!\r\n");
+            #endif
         }
     }
 }
 
-bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue )
+bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue, uint32_t requestId )
 {
     bool funStatus = false;
     responseUint32_t response;
     response.mtype = UINT32_RESPONSE;
 
     responseUint32Body_t * responseBody = (responseUint32Body_t*)response.mtext;
-    responseBody->value  = valueToResponse;
-    responseBody->status = status;
+    responseBody->requestId = requestId;
+    responseBody->value     = valueToResponse;
+    responseBody->status    = status;
     
     if ( PushMessageToQueue((void*)&response, UINT32_RESPONSE, responseQueue ) )
     {
-        printf("Respond properly with UINT32_RESPONSE \r\n" );
+        #ifdef DEBUG_PRINTOUT
+            printf("Respond properly with UINT32_RESPONSE \r\n" );
+        #endif
         funStatus = true;
     }
 
@@ -291,16 +335,76 @@ uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
     return response;
 }
 
+uint32_t GetPhaseAngle( uint8_t * status, uint8_t phase, angleValue_t valueToGet )
+{
+    uint32_t response = 0U;
+    if ( status == (uint8_t*)NULL )
+    {
+        ReportAndExit("GetPhaseAngle - passed NULL argument!");
+    }
+    if ( ( valueToGet > CURRENT ) || ( valueToGet < VOLTAGE ) )
+    {
+        ReportAndExit("GetPhaseAngle - passed bad value to get!");
+    }
+
+    if ( phase <= PHASE_CNT )
+    {
+        if ( valueToGet == VOLTAGE )
+        {
+            response = lastReadHardwareRegister.voltage_angles[phase];
+        }
+        else
+        {
+            response = lastReadHardwareRegister.current_angles[phase];
+        }
+        *status  = OK;
+    }
+    else
+    {
+        *status = BAD_INSTANCE;
+    }
+    return response;
+}
+
 
 void ReadStructFromDev( meter_hw_registers_t * pMeterReg )
 {
     int fifoFile = open(DEV_FILE, O_RDONLY);
     read(fifoFile, pMeterReg, sizeof(meter_hw_registers_t)); 
     close(fifoFile);
-    printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", pMeterReg->per_phase[2].v, pMeterReg->per_phase[2].i, pMeterReg->per_phase[2].ai,  pMeterReg->per_phase[2].ae);
+    //printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", pMeterReg->per_phase[2].v, pMeterReg->per_phase[2].i, pMeterReg->per_phase[2].ai,  pMeterReg->per_phase[2].ae);
 }
 
 void InitFifo( void )
 {
     mkfifo(DEV_FILE, 0666);
+}
+
+uint32_t NumberOfMessagesInQueue( int queueId )
+{
+    struct msqid_ds queueStructure;
+    if ( msgctl(queueId, IPC_STAT, &queueStructure) != 0 )
+    {
+        ReportAndExit("NumberOfMessagesInQueue - Problem getting queue struct...");
+    }
+    //msg_qnum is msqid_ds type which is unsigned long.
+    return (uint32_t)queueStructure.msg_qnum; 
+}
+
+void RemoveQueue( int queueId )
+{
+    if ( NumberOfMessagesInQueue( queueId ) != 0U )
+    {
+        // Queue not empty - cleanup the Queue
+        struct msqid_ds queueStructure; // This is ignored with IPC_RMID
+        if ( msgctl(queueId, IPC_RMID, &queueStructure) != 0 )
+        {
+            ReportAndExit("Error during queue cleanup...\r\n");
+        }
+        else
+        {
+            printf("Properly clean queue!\r\n");
+        }
+    }
+
 }
