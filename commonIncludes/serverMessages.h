@@ -27,7 +27,7 @@ typedef enum attributesToGet
     INSTATNTENOUS_PHASE_VOLTAGE,
     INSTATNTENOUS_PHASE_CURRENT,
     VOLTAGE_PHASE_ANGLE,
-    CURRNT_PHASE_ANGLE
+    CURRENT_PHASE_ANGLE
 } attributesToGet_t;
 
 typedef struct requestSingleGetBody

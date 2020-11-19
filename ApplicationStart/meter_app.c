@@ -176,6 +176,34 @@ int main( void )
     requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
+    // Test 9 - Request for CURRENT_PHASE_ANGLE - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        1,                              //< Proper instance number
+        CURRENT_PHASE_ANGLE,            //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 10 - Request for CURRENT_PHASE_ANGLE - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        9U,                             //< Bad instance number
+        CURRENT_PHASE_ANGLE,            //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
 
     PrintTestResults( wholeTestResponse );
     

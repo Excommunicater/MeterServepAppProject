@@ -246,12 +246,12 @@ void HandleSingleGetRequest( void )
                 responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
                 break;
             }
-            case CURRNT_PHASE_ANGLE:
+            case CURRENT_PHASE_ANGLE:
             {
                 int8_t   status = 0U;
                 uint32_t returnValue = GetPhaseAngle( &status, instance, CURRENT );
                 #ifdef DEBUG_PRINTOUT
-                    printf("HandleSingleGetRequest::CURRNT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                    printf("HandleSingleGetRequest::CURRENT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
                 #endif
                 responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
                 break;
