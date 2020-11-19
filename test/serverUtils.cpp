@@ -3,7 +3,11 @@ extern "C" {
     #include "../ServerUtils/serverUtils.h"
 }
 
-TEST(ExampleTest, FirstEmptyTest)
+// Mocking functions
+
+
+
+TEST(PushMessageToQueue, FirstEmptyTest)
 {
     GetMessageSize(1);
     EXPECT_TRUE(true);
