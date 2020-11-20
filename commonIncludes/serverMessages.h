@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#define PROJECT_ID 123
-#define SERVER_PATH_NAME  "./commonIncludes/serverMessages.h"
-
 #define NUMBER_OF_REQUEST_TYPES  4
 #define NUMBER_OF_RESPONSE_TYPES 3
 
@@ -27,7 +24,11 @@ typedef enum attributesToGet
     INSTATNTENOUS_PHASE_VOLTAGE,
     INSTATNTENOUS_PHASE_CURRENT,
     VOLTAGE_PHASE_ANGLE,
-    CURRNT_PHASE_ANGLE
+    CURRENT_PHASE_ANGLE,
+    MINIMUM_PHASE_VOLTAGE,
+    MAXIMUM_PHASE_VOLTAGE,
+    MINIMUM_PHASE_CURRENT,
+    MAXIMUM_PHASE_CURRENT
 } attributesToGet_t;
 
 typedef struct requestSingleGetBody

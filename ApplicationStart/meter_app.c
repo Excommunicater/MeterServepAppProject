@@ -8,8 +8,10 @@
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-#include "../ServerUtils/serverUtils.h"     //
+#include "../ServerUtils/queueUtils.h"        //InitServerMessageQueue(), GetNumberOfMessagesInQueue()
+#include "../ServerUtils/errorHandling.h"     //ReportAndExit()
 #include "../commonIncludes/serverMessages.h" 
+#include "../commonIncludes/projectGenerals.h" 
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
@@ -55,7 +57,9 @@ void CleanAppQueue( int queueId );
 
 int main( void )
 {
-    int serverQueueId = InitServerMessageQueue();
+    int serverQueueId;
+    (void)GetServerQueueId(&serverQueueId);
+
     int appQueueId = InitMessageQueue( APP_PATH );
     CleanAppQueue(appQueueId);
     uint32_t requestId = 1U;
@@ -71,7 +75,7 @@ int main( void )
         appQueueId,             //< Pass test response queue ID
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
-        01234567U,              //< Expected Response
+        SERVER_VERSION,         //< Expected Response
         OK,                     //< Expected response status
         requestId               //< Request ID
     );
@@ -85,10 +89,11 @@ int main( void )
         appQueueId,             //< Pass test response queue ID
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
-        98765432U,              //< Expected Response
+        01234567U,              //< Expected Response
         OK,                     //< Expected response status
         requestId               //< Request ID
     );
+
     requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
@@ -166,6 +171,146 @@ int main( void )
     testResponse = TestSingleRequestWithUint32Response(
         9U,                             //< Bad instance number
         VOLTAGE_PHASE_ANGLE,            //< Check attribute VOLTAGE_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 9 - Request for CURRENT_PHASE_ANGLE - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        1,                              //< Proper instance number
+        CURRENT_PHASE_ANGLE,            //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 10 - Request for CURRENT_PHASE_ANGLE - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        9U,                             //< Bad instance number
+        CURRENT_PHASE_ANGLE,            //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 11 - Request for MINIMUM_PHASE_VOLTAGE - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        2U,                             //< Good instance number
+        MINIMUM_PHASE_VOLTAGE,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 12 - Request for MINIMUM_PHASE_VOLTAGE - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        12U,                            //< Bad instance number
+        MINIMUM_PHASE_VOLTAGE,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 13 - Request for MAXIMUM_PHASE_VOLTAGE - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        2U,                             //< Good instance number
+        MAXIMUM_PHASE_VOLTAGE,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 14 - Request for MAXIMUM_PHASE_VOLTAGE - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        12U,                            //< Bad instance number
+        MAXIMUM_PHASE_VOLTAGE,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 15 - Request for MINIMUM_PHASE_CURRENT - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        2U,                             //< Good instance number
+        MINIMUM_PHASE_CURRENT,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 16 - Request for MINIMUM_PHASE_CURRENT - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        12U,                            //< Bad instance number
+        MINIMUM_PHASE_CURRENT,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 17 - Request for MAXIMUM_PHASE_CURRENT - Proper instance
+    testResponse = TestSingleRequestWithUint32Response(
+        2U,                             //< Good instance number
+        MAXIMUM_PHASE_CURRENT,          //< Check attribute CURRENT_PHASE_ANGLE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        OK,                             //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 18 - Request for MAXIMUM_PHASE_CURRENT - Bad instance
+    testResponse = TestSingleRequestWithUint32Response(
+        12U,                            //< Bad instance number
+        MAXIMUM_PHASE_CURRENT,          //< Check attribute CURRENT_PHASE_ANGLE
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
         false,                          //< Do not validate Response
@@ -293,7 +438,7 @@ void PrintTestResponse( testResponses_t response )
 
 void CleanAppQueue( int queueId )
 {
-    uint32_t messagesInQueue = NumberOfMessagesInQueue(queueId);
+    uint32_t messagesInQueue = GetNumberOfMessagesInQueue(queueId);
     //Temporary solution - have to get all types of responses....
     for (uint32_t i = 0U; i < messagesInQueue; i++)
     {
