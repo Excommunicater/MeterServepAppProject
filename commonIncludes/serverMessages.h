@@ -45,6 +45,22 @@ typedef struct requestSingleGet
     char mtext[sizeof(requestSingleGetBody_t)];
 } requestSingleGet_t;
 
+// @note: Attributes to reset: 
+// MINIMUM_PHASE_VOLTAGE | MAXIMUM_PHASE_VOLTAGE | MINIMUM_PHASE_CURRENT | MAXIMUM_PHASE_CURRENT
+typedef struct requestResetBody
+{
+    uint32_t requestId;          //< Id of partiqular request
+    int queueResponseId;         //< To this queue ID response shall be sent
+    uint8_t instance;            //< Phaze number
+    attributesToGet_t attribute; //< Attribute to reset
+} requestResetBody_t;
+
+typedef struct requestReset
+{
+    long mtype;
+    char mtext[sizeof(requestResetBody_t)];
+} requestReset_t;
+
 //--------------------------------------------------------------------
 
 //--Response Data Types and Structures--------------------------------
@@ -59,14 +75,14 @@ typedef enum shortConfirmationValues
 {
     OK = 0U,
     ERROR,
-    BAD_INSTANCE
+    BAD_INSTANCE,
+    BAD_ATTRIBUTE
 } shortConfirmationValues_t;
 
 typedef struct responseShortConfirmationBody
 {
-        uint32_t requestId; 
+    uint32_t requestId; 
     shortConfirmationValues_t confirmationValue;
-    uint32_t someData1;
 } responseShortConfirmationBody_t;
 
 typedef struct responseShortConfirmation
@@ -79,7 +95,7 @@ typedef struct responseUint32Body
 {
     uint32_t requestId; 
     uint32_t value;
-    uint8_t  status;
+    shortConfirmationValues_t status;
 } responseUint32Body_t;
 
 typedef struct responseUint32
@@ -93,7 +109,7 @@ typedef struct responseUint64
 {
     uint32_t requestId; 
     uint64_t value;
-    uint32_t status;
+    shortConfirmationValues_t status;
 } responseUint64_t;
 //--------------------------------------------------------------------
 

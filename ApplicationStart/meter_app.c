@@ -47,12 +47,25 @@ testResponses_t TestSingleRequestWithUint32Response(
     int serverQueueId,
     bool validateResponseValue, 
     uint32_t expectedResponse,
-    uint8_t expectedStatus,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId );
+testResponses_t TestSingleRequestShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId );
+testResponses_t TestResetRequestWithShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
 void PrintTestResults( wholeTestResponse_t result );
 void PrintTestResponse( testResponses_t response );
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse );
-void CleanAppQueue( int queueId );
 //--------------------------------------------------------------------
 
 int main( void )
@@ -321,9 +334,127 @@ int main( void )
     requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
+    // Test 19 - Request Not supported attribute
+    TestSingleRequestShortConfirmationResponse(
+        1U,                             //< Good instance number
+        97U,                            //< Get not existing attribute
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_ATTRIBUTE,                  //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 20 - Reset MINIMUM_PHASE_VOLTAGE - Proper instance
+    TestResetRequestWithShortConfirmationResponse(
+        1U,                             //< Good instance number
+        MINIMUM_PHASE_VOLTAGE,          //< Reset attribute MINIMUM_PHASE_VOLTAGE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        OK,                             //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 21 - Reset MINIMUM_PHASE_VOLTAGE - Bad instance
+    TestResetRequestWithShortConfirmationResponse(
+        7U,                             //< Bad instance number
+        MINIMUM_PHASE_VOLTAGE,          //< Reset attribute MINIMUM_PHASE_VOLTAGE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 22 - Reset MAXIMUM_PHASE_VOLTAGE - Proper instance
+    TestResetRequestWithShortConfirmationResponse(
+        1U,                             //< Good instance number
+        MAXIMUM_PHASE_VOLTAGE,          //< Reset attribute MAXIMUM_PHASE_VOLTAGE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        OK,                             //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 23 - Reset MAXIMUM_PHASE_VOLTAGE - Bad instance
+    TestResetRequestWithShortConfirmationResponse(
+        7U,                             //< Bad instance number
+        MAXIMUM_PHASE_VOLTAGE,          //< Reset attribute MAXIMUM_PHASE_VOLTAGE
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 24 - Reset MINIMUM_PHASE_CURRENT - Proper instance
+    TestResetRequestWithShortConfirmationResponse(
+        1U,                             //< Good instance number
+        MINIMUM_PHASE_CURRENT,          //< Reset attribute MINIMUM_PHASE_CURRENT
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        OK,                             //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 25 - Reset MINIMUM_PHASE_CURRENT - Bad instance
+    TestResetRequestWithShortConfirmationResponse(
+        7U,                             //< Bad instance number
+        MINIMUM_PHASE_CURRENT,          //< Reset attribute MINIMUM_PHASE_CURRENT
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 26 - Reset MAXIMUM_PHASE_CURRENT - Proper instance
+    TestResetRequestWithShortConfirmationResponse(
+        1U,                             //< Good instance number
+        MAXIMUM_PHASE_CURRENT,          //< Reset attribute MAXIMUM_PHASE_CURRENT
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        OK,                             //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 27 - Reset MAXIMUM_PHASE_CURRENT - Bad instance
+    TestResetRequestWithShortConfirmationResponse(
+        7U,                             //< Bad instance number
+        MAXIMUM_PHASE_CURRENT,          //< Reset attribute MAXIMUM_PHASE_CURRENT
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 28 - Attribute not supported
+    TestResetRequestWithShortConfirmationResponse(
+        1U,                             //< Good instance number
+        METER_NUMBER,                   //< Bad attribute
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        BAD_ATTRIBUTE,                  //< Expected response status
+        requestId                       //< Request ID    
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
 
     PrintTestResults( wholeTestResponse );
-    
 }
 
 testResponses_t TestSingleRequestWithUint32Response( 
@@ -333,7 +464,7 @@ testResponses_t TestSingleRequestWithUint32Response(
     int serverQueueId,
     bool validateResponseValue, 
     uint32_t expectedResponse,
-    uint8_t expectedStatus,
+    shortConfirmationValues_t expectedStatus,
     uint32_t requestId )
 {
     bool operationStatus = false;
@@ -344,7 +475,7 @@ testResponses_t TestSingleRequestWithUint32Response(
 
     //--Set Request Message-----------------------------------------------
     request.mtype                   = SINGLE_GET_REQUEST;
-    pRequestBody->requestId        = requestId;
+    pRequestBody->requestId         = requestId;
     pRequestBody->attribute         = attribute;
     pRequestBody->instance          = instance;
     pRequestBody->queueResponseId   = responseQueueId;
@@ -387,6 +518,111 @@ testResponses_t TestSingleRequestWithUint32Response(
     }
     return TEST_OK;
 }
+
+testResponses_t TestResetRequestWithShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId )
+{
+    bool operationStatus = false;
+    requestReset_t request;
+    responseShortConfirmation_t responseShort;
+    requestResetBody_t * pRequestBody = (requestResetBody_t*)request.mtext;
+    responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+
+    //--Set Request Message-----------------------------------------------
+    request.mtype                   = RESET_REQUEST;
+    pRequestBody->requestId         = requestId;
+    pRequestBody->attribute         = attribute;
+    pRequestBody->instance          = instance;
+    pRequestBody->queueResponseId   = responseQueueId;
+    //--------------------------------------------------------------------
+
+    // Try to push Request to server
+    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+    // Wait a while
+    sleep(1);
+
+    if ( GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
+    {
+        pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+        if( pResponseBody->requestId != requestId )
+        {
+            return TEST_ERROR_SEGMENTATION;
+        }
+        if ( pResponseBody->confirmationValue != expectedStatus )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    else
+    {
+        return TEST_ERROR_RECIVE_RESPONSE;
+    }
+    return TEST_OK;
+}
+
+testResponses_t TestSingleRequestShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId )
+{
+    bool operationStatus = false;
+    requestSingleGet_t request;
+    responseShortConfirmation_t responseShort;
+    requestSingleGetBody_t * pRequestBody = (requestSingleGetBody_t*)request.mtext;
+    responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+
+    //--Set Request Message-----------------------------------------------
+    request.mtype                   = SINGLE_GET_REQUEST;
+    pRequestBody->requestId         = requestId;
+    pRequestBody->attribute         = attribute;
+    pRequestBody->instance          = instance;
+    pRequestBody->queueResponseId   = responseQueueId;
+    //--------------------------------------------------------------------
+    // Try to push Request to server
+    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+    // Wait a while
+    sleep(1);
+    if ( GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
+    {
+        pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+        if( pResponseBody->requestId != requestId )
+        {
+            return TEST_ERROR_SEGMENTATION;
+        }
+        if ( pResponseBody->confirmationValue != expectedStatus )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    else
+    {
+        return TEST_ERROR_RECIVE_RESPONSE;
+    }
+    return TEST_OK;
+}
+
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse )
 {
     pWholeTestResponse->numberOfTests++;
@@ -433,16 +669,5 @@ void PrintTestResponse( testResponses_t response )
         default:
             printf("Some strange response...\r\n");
             break;
-    }
-}
-
-void CleanAppQueue( int queueId )
-{
-    uint32_t messagesInQueue = GetNumberOfMessagesInQueue(queueId);
-    //Temporary solution - have to get all types of responses....
-    for (uint32_t i = 0U; i < messagesInQueue; i++)
-    {
-        responseUint32_t responseUint32;
-        GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
     }
 }

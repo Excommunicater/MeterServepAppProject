@@ -12,12 +12,12 @@ typedef struct messageTypeSize
 const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 {
     { SINGLE_GET_REQUEST,           sizeof(requestSingleGetBody_t) },
-    { RESET_REQUEST,                1 },
+    { RESET_REQUEST,                sizeof(requestResetBody_t) },
     { SET_EVENT_REQUEST,            1 },
     { RESET_EVENT_REQUEST,          1 },
     { SHORT_CONFIRMATION_RESPONSE,  sizeof(responseShortConfirmationBody_t) },
     { UINT32_RESPONSE,              sizeof(responseUint32Body_t) },
-    { UINT64_RESPONSE,              sizeof(responseUint64_t)} 
+    { UINT64_RESPONSE,              1} 
 };
 
 size_t GetMessageSize( long type )
@@ -34,9 +34,9 @@ size_t GetMessageSize( long type )
     return response;
 }
 
-bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueue, uint32_t requestId )
+bool ResponseUint32( uint32_t valueToResponse, shortConfirmationValues_t status, long responseQueue, uint32_t requestId )
 {
-    bool funStatus = false;
+    bool retVal = false;
     responseUint32_t response;
     response.mtype = UINT32_RESPONSE;
 
@@ -50,8 +50,28 @@ bool ResponseUint32( uint32_t valueToResponse, uint8_t status, long responseQueu
         #ifdef DEBUG_PRINTOUT
             printf("Respond properly with UINT32_RESPONSE \r\n" );
         #endif
-        funStatus = true;
+        retVal = true;
     }
 
-    return funStatus;
+    return retVal;
+}
+
+bool ResponseShortConfirmation( shortConfirmationValues_t valueToresponse, long responseQueue, uint32_t requestId )
+{
+    bool retVal = false;
+    responseShortConfirmation_t response;
+    response.mtype = SHORT_CONFIRMATION_RESPONSE;
+
+    responseShortConfirmationBody_t * responseBody = (responseShortConfirmationBody_t*)response.mtext;
+    responseBody->requestId         = requestId;
+    responseBody->confirmationValue = valueToresponse;
+
+    if ( PushMessageToQueue((void*)&response, SHORT_CONFIRMATION_RESPONSE, responseQueue ) )
+    {
+        #ifdef DEBUG_PRINTOUT
+            printf("Respond properly with UINT32_RESPONSE \r\n" );
+        #endif
+        retVal = true;
+    }
+
 }

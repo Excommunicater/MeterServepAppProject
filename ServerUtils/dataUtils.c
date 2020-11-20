@@ -8,7 +8,7 @@
 #include <fcntl.h>  // open(), read()
 
 
-//#define DU_DBG_PRNT
+#define DU_DBG_PRNT
 
 //--Local Structures--------------------------------------------------
 typedef struct maxMinPerPhaseVoltageAndCurrent
@@ -25,11 +25,11 @@ static meter_hw_registers_t lastReadHardwareRegister = {0};
 static maxMinPerPhaseVoltageAndCurrent_t maxMinVI[PHASE_CNT] = {0};
 //--------------------------------------------------------------------
 
-uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
+uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8_t phase )
 {
     uint32_t response = 0U;
 
-    if ( status == (uint8_t*)NULL )
+    if ( status == (shortConfirmationValues_t*)NULL )
     {
         ReportAndExit("GetInstatntenousPhaseVoltage - passed NULL argument!");
     }
@@ -46,11 +46,11 @@ uint32_t GetInstatntenousPhaseVoltage( uint8_t * status, uint8_t phase )
     return response;
 }
 
-uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
+uint32_t GetInstatntenousPhaseCurrent( shortConfirmationValues_t * status, uint8_t phase )
 {
     uint32_t response = 0U;
 
-    if ( status == (uint8_t*)NULL )
+    if ( status == (shortConfirmationValues_t*)NULL )
     {
         ReportAndExit("GetInstatntenousPhaseCurrent - passed NULL argument!");
     }
@@ -67,10 +67,10 @@ uint32_t GetInstatntenousPhaseCurrent( uint8_t * status, uint8_t phase )
     return response;
 }
 
-uint32_t GetPhaseAngle( uint8_t * status, uint8_t phase, angleValue_t valueToGet )
+uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet )
 {
     uint32_t response = 0U;
-    if ( status == (uint8_t*)NULL )
+    if ( status == (shortConfirmationValues_t*)NULL )
     {
         ReportAndExit("GetPhaseAngle - passed NULL argument!");
     }
@@ -143,9 +143,9 @@ void StoreMaxMinValues( void )
     }
 }
 
-uint32_t GetMinMaxPhaseValue( uint8_t * status, uint8_t phase, angleValue_t valueToGet, angleMinMax_t minOrMax )
+uint32_t GetMinMaxPhaseValue( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet, angleMinMax_t minOrMax )
 {
-    if ( status == (uint8_t*)NULL )
+    if ( status == (shortConfirmationValues_t*)NULL )
     {
         ReportAndExit("GetMinMaxPhaseValue - passed NULL argument!");
     }
@@ -191,4 +191,51 @@ uint32_t GetMinMaxPhaseValue( uint8_t * status, uint8_t phase, angleValue_t valu
         *status = BAD_INSTANCE;
     }
     return response;
+}
+
+shortConfirmationValues_t ResetMinMaxPhaseValue( uint8_t phase, angleValue_t valueToReset, angleMinMax_t minOrMax )
+{
+    if ( ( valueToReset > ANGLE_CURRENT ) || ( valueToReset < ANGLE_VOLTAGE ) )
+    {
+        ReportAndExit("ResetMinMaxPhaseValue - passed bad value to get!");
+    }
+    if ( ( minOrMax > ANGLE_MAX ) || ( minOrMax < ANGLE_MIN ) )
+    {
+        ReportAndExit("ResetMinMaxPhaseValue - passed bad min or max descriptor!");
+    }
+
+    shortConfirmationValues_t retVal = ERROR;
+
+    if ( phase <= PHASE_CNT )
+    {
+        if ( valueToReset == ANGLE_VOLTAGE )
+        {
+            if ( minOrMax == ANGLE_MAX )
+            {
+                maxMinVI[phase].maxVoltage = 0U;
+            }
+            else
+            {
+                maxMinVI[phase].minVoltage = 0U;
+            }
+        }
+        else
+        {
+            if ( minOrMax == ANGLE_MAX )
+            {
+                maxMinVI[phase].maxCurrent = 0U;
+            }
+            else
+            {
+                maxMinVI[phase].minCurrent = 0U;
+            }
+        }
+        retVal  = OK; 
+    }
+    else
+    {
+        retVal = BAD_INSTANCE;
+    }
+    
+    return retVal;
 }

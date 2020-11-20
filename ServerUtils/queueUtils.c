@@ -20,6 +20,7 @@ bool GetServerQueueStatus( void )
 
 bool GetServerQueueId( int * serverQueueId )
 {
+    InitServerMessageQueue();
     *serverQueueId = serverReceiveQueueId;
     return serverQueueStatus;
 }
@@ -58,6 +59,7 @@ bool PushMessageToQueue( void * message, long messageType, int queueId )
     {
         if ( msgsnd(queueId, message, GetMessageSize( messageType ), IPC_NOWAIT) == -1) 
         {
+            RemoveQueue(queueId);
             ReportAndExit("Unexpected error pushing message to queue...");
         }
         else
@@ -86,8 +88,8 @@ bool GetMessageFromServerQueue( void * message, long messageType  )
 
 bool GetMessageFromQueue( void * message, long messageType, int queueId )
 {
-    bool status = (bool)( GetNumberOfMessagesInQueue( queueId ) != 0U );
-    if ( ( message != (void*)NULL ) && status )
+    bool status = false;
+    if ( ( message != (void*)NULL ) && ( GetNumberOfMessagesInQueue( queueId ) != 0U ) )
     {
         if ( msgrcv(queueId, 
                     message, 
@@ -120,8 +122,34 @@ void RemoveQueue( int queueId )
         }
         else
         {
-            printf("Properly clean queue!\r\n");
+            printf("Properly removed queue!\r\n");
         }
     }
 
+}
+
+void CleanAppQueue( int queueId )
+{
+    uint32_t messagesInQueue = GetNumberOfMessagesInQueue(queueId);
+    //Temporary solution - have to get all types of responses....
+    for (uint32_t i = 0U; i < messagesInQueue; i++)
+    {
+        responseUint32_t responseUint32;
+        responseShortConfirmation_t responseShort;
+        GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
+        GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, queueId );
+    }
+}
+
+void CleanSrvQueue( void )
+{
+    uint32_t messagesInQueue = GetNumberOfMessagesInQueue(serverReceiveQueueId);
+    //Temporary solution - have to get all types of responses....
+    for (uint32_t i = 0U; i < messagesInQueue; i++)
+    {
+        requestSingleGet_t requestSingle;
+        requestReset_t requestReset;
+        GetMessageFromServerQueue( (void*)&requestSingle, SINGLE_GET_REQUEST );
+        GetMessageFromServerQueue( (void*)&requestReset, RESET_REQUEST );
+    }
 }
