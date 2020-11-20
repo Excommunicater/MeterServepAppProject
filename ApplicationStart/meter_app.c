@@ -8,8 +8,10 @@
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-#include "../ServerUtils/serverUtils.h"     //
+#include "../ServerUtils/queueUtils.h"        //InitServerMessageQueue(), GetNumberOfMessagesInQueue()
+#include "../ServerUtils/errorHandling.h"     //ReportAndExit()
 #include "../commonIncludes/serverMessages.h" 
+#include "../commonIncludes/projectGenerals.h" 
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
@@ -55,7 +57,9 @@ void CleanAppQueue( int queueId );
 
 int main( void )
 {
-    int serverQueueId = InitServerMessageQueue();
+    int serverQueueId;
+    (void)GetServerQueueId(&serverQueueId);
+
     int appQueueId = InitMessageQueue( APP_PATH );
     CleanAppQueue(appQueueId);
     uint32_t requestId = 1U;
@@ -71,7 +75,7 @@ int main( void )
         appQueueId,             //< Pass test response queue ID
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
-        01234567U,              //< Expected Response
+        SERVER_VERSION,         //< Expected Response
         OK,                     //< Expected response status
         requestId               //< Request ID
     );
@@ -85,10 +89,11 @@ int main( void )
         appQueueId,             //< Pass test response queue ID
         serverQueueId,          //< Pass server request queue ID
         true,                   //< Validate Response
-        98765432U,              //< Expected Response
+        01234567U,              //< Expected Response
         OK,                     //< Expected response status
         requestId               //< Request ID
     );
+    
     requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
@@ -321,7 +326,7 @@ void PrintTestResponse( testResponses_t response )
 
 void CleanAppQueue( int queueId )
 {
-    uint32_t messagesInQueue = NumberOfMessagesInQueue(queueId);
+    uint32_t messagesInQueue = GetNumberOfMessagesInQueue(queueId);
     //Temporary solution - have to get all types of responses....
     for (uint32_t i = 0U; i < messagesInQueue; i++)
     {

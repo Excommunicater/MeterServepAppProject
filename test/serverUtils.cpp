@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 extern "C" {
-    #include "../ServerUtils/serverUtils.h"
+    #include "../ServerUtils/messageUtils.h"
 }
 
 // Mocking functions
