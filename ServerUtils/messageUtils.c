@@ -1,4 +1,5 @@
 #include "messageUtils.h"
+#include "queueUtils.h"
 #include "../commonIncludes/serverMessages.h"     //
 
 //--Local Structures--------------------------------------------------

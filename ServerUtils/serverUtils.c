@@ -13,10 +13,11 @@
 #include "serverUtils.h"
 #include "queueUtils.h"
 #include "dataUtils.h"
+#include "messageUtils.h"
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
-//#define DEBUG_PRINTOUT
+//#define SU_DBG_PRNT
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
@@ -75,64 +76,82 @@ void HandleSingleGetRequest( void )
         uint32_t requestId = messageBody->requestId;
         attributesToGet_t attribute = messageBody->attribute;
         uint8_t instance = messageBody->instance;
+        uint8_t status = 0U;
+        uint32_t returnUint32Value = 0U;
         switch ( attribute )
         {
             case METER_NUMBER:
-                #ifdef DEBUG_PRINTOUT
+                #ifdef SU_DBG_PRNT
                     printf("HandleSingleGetRequest::METER_NUMBER rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_METER_NUMBER, OK);
                 #endif
                 responseStatus = ResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId, requestId );
                 break;
         
             case METER_SERVER_VERSION:
-                #ifdef DEBUG_PRINTOUT
+                #ifdef SU_DBG_PRNT
                     printf("HandleSingleGetRequest::METER_SERVER_VERSION rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_SERVER_VERSION, OK);
                 #endif
                 responseStatus = ResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId, requestId );
                 break;
 
             case INSTATNTENOUS_PHASE_VOLTAGE:
-            {
-                uint8_t  status = 0U;
-                uint32_t returnValue = GetInstatntenousPhaseVoltage( &status, instance );
-                #ifdef DEBUG_PRINTOUT
-                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n", requestId,instance, returnValue, status);
+                returnUint32Value = GetInstatntenousPhaseVoltage( &status, instance );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n", requestId,instance, returnUint32Value, status);
                 #endif
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-            }
 
             case INSTATNTENOUS_PHASE_CURRENT:
-            {
-                uint8_t  status = 0U;
-                uint32_t returnValue = GetInstatntenousPhaseCurrent( &status, instance );
-                #ifdef DEBUG_PRINTOUT
-                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                returnUint32Value = GetInstatntenousPhaseCurrent( &status, instance );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-            }
 
             case VOLTAGE_PHASE_ANGLE:
-            {
-                int8_t   status = 0U;
-                uint32_t returnValue = GetPhaseAngle( &status, instance, ANGLE_VOLTAGE );
-                #ifdef DEBUG_PRINTOUT
-                    printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                returnUint32Value = GetPhaseAngle( &status, instance, ANGLE_VOLTAGE );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-            }
             case CURRENT_PHASE_ANGLE:
-            {
-                int8_t   status = 0U;
-                uint32_t returnValue = GetPhaseAngle( &status, instance, ANGLE_CURRENT );
-                #ifdef DEBUG_PRINTOUT
-                    printf("HandleSingleGetRequest::CURRENT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnValue, status);
+                returnUint32Value = GetPhaseAngle( &status, instance, ANGLE_CURRENT );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::CURRENT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
-                responseStatus = ResponseUint32( returnValue, status, responseQueueId, requestId );
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-            }           
+            case MINIMUM_PHASE_VOLTAGE:
+                returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_VOLTAGE, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::MINIMUM_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
+                break;
+            case MAXIMUM_PHASE_VOLTAGE:
+                returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_VOLTAGE, ANGLE_MAX );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
+                break;
+            case MINIMUM_PHASE_CURRENT:
+                returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_CURRENT, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
+                break;
+            case MAXIMUM_PHASE_CURRENT:
+                returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_CURRENT, ANGLE_MAX );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
+                break;
         
             default:
                 // Attribute not supported
@@ -141,7 +160,7 @@ void HandleSingleGetRequest( void )
 
         if ( !responseStatus )
         {
-            #ifdef DEBUG_PRINTOUT
+            #ifdef SU_DBG_PRNT
                 printf("ERROR DURING RESPONDING WITH UINT32_T!\r\n");
             #endif
         }
