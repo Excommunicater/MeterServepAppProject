@@ -17,7 +17,7 @@
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
-//#define SU_DBG_PRNT
+#define SU_DBG_PRNT
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
@@ -34,6 +34,7 @@ static int serverReceiveQueueId = 0;
 void InitFifo( void );
 void HandleIncomeMessages( void );
 void HandleSingleGetRequest( void );
+void HandleResetRequest( void );
 //--------------------------------------------------------------------
 
 void StartServer( void )
@@ -52,6 +53,8 @@ void InitServer( void )
 {
     InitFifo();
     InitServerMessageQueue();
+    (void)GetServerQueueId(&serverReceiveQueueId);
+    CleanSrvQueue();
 }
 
 void InitFifo( void )
@@ -61,14 +64,18 @@ void InitFifo( void )
 
 void HandleIncomeMessages( void )
 {
-    HandleSingleGetRequest();
+    while ( GetNumberOfMessagesInQueue(serverReceiveQueueId) )
+    {
+        HandleSingleGetRequest();
+        HandleResetRequest();
+    }
 }
 
 
 void HandleSingleGetRequest( void )
 {
     requestSingleGet_t requestMessage;
-    while ( GetMessageFromServerQueue( (void *)&requestMessage, SINGLE_GET_REQUEST ) )
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, SINGLE_GET_REQUEST ) )
     {
         bool responseStatus = false;
         requestSingleGetBody_t * messageBody = (requestSingleGetBody_t*)requestMessage.mtext;
@@ -76,7 +83,7 @@ void HandleSingleGetRequest( void )
         uint32_t requestId = messageBody->requestId;
         attributesToGet_t attribute = messageBody->attribute;
         uint8_t instance = messageBody->instance;
-        uint8_t status = 0U;
+        shortConfirmationValues_t status = ERROR;
         uint32_t returnUint32Value = 0U;
         switch ( attribute )
         {
@@ -155,6 +162,10 @@ void HandleSingleGetRequest( void )
         
             default:
                 // Attribute not supported
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest ATTRIBUTE NOT SUPPORTED!\r\n");
+                #endif
+                responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
                 break;
         }
 
@@ -163,6 +174,68 @@ void HandleSingleGetRequest( void )
             #ifdef SU_DBG_PRNT
                 printf("ERROR DURING RESPONDING WITH UINT32_T!\r\n");
             #endif
+
+        }
+    }
+}
+
+void HandleResetRequest( void )
+{
+    requestReset_t requestMessage;
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, RESET_REQUEST ) )
+    {
+        bool responseStatus = false;
+        requestResetBody_t * messageBody = (requestResetBody_t*)requestMessage.mtext;
+        long responseQueueId = messageBody->queueResponseId;
+        uint32_t requestId = messageBody->requestId;
+        attributesToGet_t attribute = messageBody->attribute;
+        uint8_t instance = messageBody->instance;
+        shortConfirmationValues_t status = ERROR;
+        switch ( attribute )
+        {
+            case MINIMUM_PHASE_VOLTAGE:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::MINIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case MAXIMUM_PHASE_VOLTAGE:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MAX );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::MAXIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case MINIMUM_PHASE_CURRENT:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case MAXIMUM_PHASE_CURRENT:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            default:
+                // Attribute not supported
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest ATTRIBUTE NOT SUPPORTED!\r\n");
+                #endif
+                responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
+                break;
+        }
+
+        if ( !responseStatus )
+        {
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING RESPONDING!\r\n");
+            #endif
+
         }
     }
 }

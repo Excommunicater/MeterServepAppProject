@@ -13,5 +13,7 @@ uint32_t GetNumberOfMessagesInQueue( int queueId );
 bool GetMessageFromServerQueue( void * message, long messageType );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
 void RemoveQueue( int queueId );
+void CleanAppQueue( int queueId );
+void CleanSrvQueue( void );
 
 #endif //QUEUE_UTILS_H
