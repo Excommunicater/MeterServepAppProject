@@ -223,6 +223,60 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
     return TEST_OK;
 }
 
+testResponses_t TestSubscribeRequestWithSubscriptionResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    subscriptionRegistrationStatus_t expectedStatus,
+    uint32_t requestId,
+    uint8_t * notificationId )
+{
+    bool operationStatus = false;
+    requestSubscription_t request;
+    responseSubscription_t response;
+    requestSubscriptionBody_t * pRequestBody = (requestSubscriptionBody_t*)request.mtext;
+    responseSubscriptionBody_t * pResponseBody;
+
+    //--Set Request Message-----------------------------------------------
+    request.mtype                   = SUBSCRIBE_REQUEST;
+    pRequestBody->requestId         = requestId;
+    pRequestBody->queueResponseId   = responseQueueId;
+    pRequestBody->instance          = instance;
+    pRequestBody->attribute         = attribute;
+    //--------------------------------------------------------------------
+    // Try to push Request to server
+    operationStatus = PushMessageToQueue( (void*)&request, SUBSCRIBE_REQUEST, serverQueueId );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
+
+    if ( GetMessageFromQueue( (void*)&response, SUBSCRIPTION_RESPONSE, responseQueueId ) )
+    {
+        pResponseBody = (responseSubscriptionBody_t*)response.mtext;
+        *notificationId = pResponseBody->notificationId;
+        if( pResponseBody->requestId != requestId )
+        {
+            printf("GetId = %i; Expected = %i\r\n", pResponseBody->requestId, requestId );
+            return TEST_ERROR_SEGMENTATION;
+        }
+        if ( pResponseBody->confirmationValue != expectedStatus )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    else
+    {
+        return TEST_ERROR_RECIVE_RESPONSE;
+    }
+    return TEST_OK;
+}
 
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse )
 {

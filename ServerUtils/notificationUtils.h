@@ -13,4 +13,5 @@ typedef enum theseholdSetType
 
 shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdSetType_t typeToSet, uint32_t valueToSet );
 shortConfirmationValues_t ResetVoltageThresehold( uint8_t phase, theseholdSetType_t typeToReset );
+subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue );
 #endif // NOTIFICATION_UTILS_H

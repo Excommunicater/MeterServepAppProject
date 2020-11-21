@@ -136,8 +136,10 @@ void CleanAppQueue( int queueId )
     {
         responseUint32_t responseUint32;
         responseShortConfirmation_t responseShort;
+        responseSubscription_t responseSubscription;
         GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
         GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, queueId );
+        GetMessageFromQueue( (void*)&responseSubscription, SUBSCRIPTION_RESPONSE, queueId );
     }
 }
 
@@ -149,7 +151,9 @@ void CleanSrvQueue( void )
     {
         requestSingleGet_t requestSingle;
         requestReset_t requestReset;
+        requestSubscription_t requestSubscription;
         GetMessageFromServerQueue( (void*)&requestSingle, GET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestReset, RESET_REQUEST );
+        GetMessageFromServerQueue( (void*)&requestSubscription, SUBSCRIBE_REQUEST );
     }
 }

@@ -3,19 +3,27 @@
 
 #include <stdint.h>
 
-#define NUMBER_OF_REQUEST_TYPES  4
-#define NUMBER_OF_RESPONSE_TYPES 3
+#define NUMBER_OF_REQUEST_TYPES  5
+#define NUMBER_OF_RESPONSE_TYPES 4
 
 #define NUMBER_OF_MESSAGE_TYPES NUMBER_OF_REQUEST_TYPES + NUMBER_OF_RESPONSE_TYPES
 
-//--Request Data Types and Structures----------------------------------
 typedef enum messageTypeRequest
 {
     GET_SINGLE_REQUEST = 1U,
     RESET_REQUEST,
     SET_SINGLE_REQUEST,
-    SUBSCRIBE_REQUEST
+    SUBSCRIBE_REQUEST,
+    NOTIFICATION
 } messageTypeRequest_t;
+
+typedef enum messageTypeResponse
+{
+    SHORT_CONFIRMATION_RESPONSE = NUMBER_OF_REQUEST_TYPES + 1,
+    UINT32_RESPONSE,
+    UINT64_RESPONSE,
+    SUBSCRIPTION_RESPONSE
+} messageTypeResponse_t;
 
 typedef enum attributesToGet
 {
@@ -47,9 +55,33 @@ typedef enum attributesToReset
     RESET_OVER_VOLTAGE_THRESEHOLD
 } attributesToReset_t;
 
+typedef enum subscription
+{
+    UNDER_VOLTAGE_SUBSCRIPTION = 0U,
+    OVER_VOLTAGE_SUBSCRIPTION
+} subscription_t;
+
+typedef enum subscriptionRegistrationStatus
+{
+    SUBSCRIPTION_REGISTERED = 0U,
+    SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST,
+    SUBSCRIPTION_LIST_FULL,
+    SUBSCRIBTION_ALREADY_EXIST
+} subscriptionRegistrationStatus_t;
+
+typedef enum shortConfirmationValues
+{
+    OK = 0U,
+    ERROR,
+    BAD_INSTANCE,
+    BAD_ATTRIBUTE
+} shortConfirmationValues_t;
+//--------------------------------------------------------------------
+
+//--Request Data Types -----------------------------------------------
 typedef struct requestSingleGetBody
 {
-    uint32_t requestId;          //< Id of partiqular request
+    uint32_t requestId;          //< Id of particular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number - if attribute not phaze related - just ignore it!
     attributesToGet_t attribute; //< Attribute number to get
@@ -63,7 +95,7 @@ typedef struct requestSingleGet
 
 typedef struct requestResetBody
 {
-    uint32_t requestId;          //< Id of partiqular request
+    uint32_t requestId;          //< Id of particular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number
     attributesToReset_t attribute; //< Attribute to reset
@@ -77,7 +109,7 @@ typedef struct requestReset
 
 typedef struct requestSingleSetBody
 {
-    uint32_t requestId;          //< Id of partiqular request
+    uint32_t requestId;          //< Id of particular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number
     attributesToSet_t attribute; //< Attribute number to set
@@ -90,24 +122,22 @@ typedef struct requestSingleSet
     char mtext[sizeof(requestSingleSetBody_t)];
 } requestSingleSet_t;
 
+typedef struct requestSubscriptionBody
+{
+    uint32_t requestId;       //< Id of particular request
+    int queueResponseId;      //< To this queue ID response shall be sent
+    uint8_t instance;         //< Phaze number
+    subscription_t attribute; //< Subscription type
+} requestSubscriptionBody_t;
+
+typedef struct requestSubscription
+{
+    long mtype;
+    char mtext[sizeof(requestSubscriptionBody_t)];
+} requestSubscription_t;
 //--------------------------------------------------------------------
 
-//--Response Data Types and Structures--------------------------------
-typedef enum messageTypeResponse
-{
-    SHORT_CONFIRMATION_RESPONSE = NUMBER_OF_REQUEST_TYPES + 1,
-    UINT32_RESPONSE,
-    UINT64_RESPONSE
-} messageTypeResponse_t;
-
-typedef enum shortConfirmationValues
-{
-    OK = 0U,
-    ERROR,
-    BAD_INSTANCE,
-    BAD_ATTRIBUTE
-} shortConfirmationValues_t;
-
+//--Response Data Types ----------------------------------------------
 typedef struct responseShortConfirmationBody
 {
     uint32_t requestId; 
@@ -140,6 +170,20 @@ typedef struct responseUint64
     uint64_t value;
     shortConfirmationValues_t status;
 } responseUint64_t;
+
+typedef struct responseSubscriptionBody
+{
+    uint32_t requestId; 
+    subscriptionRegistrationStatus_t confirmationValue;
+    uint8_t notificationId;
+} responseSubscriptionBody_t;
+
+typedef struct responseSubscription
+{
+    long mtype;
+    char mtext[sizeof(responseSubscriptionBody_t)];
+} responseSubscription_t;
+
 //--------------------------------------------------------------------
 
 #endif // SERVER_MESSAGES_H

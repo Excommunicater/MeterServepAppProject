@@ -56,6 +56,15 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
     uint32_t requestId,
     uint32_t valueToSet );
 
+testResponses_t TestSubscribeRequestWithSubscriptionResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    subscriptionRegistrationStatus_t expectedStatus,
+    uint32_t requestId,
+    uint8_t * notificationId );
+
 void PrintTestResults( wholeTestResponse_t result, const char * testPath );
 void PrintTestResponse( testResponses_t response );
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse );

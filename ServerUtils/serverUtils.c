@@ -37,6 +37,8 @@ void HandleIncomeMessages( void );
 void HandleSingleGetRequest( void );
 void HandleSingleSetRequest( void );
 void HandleResetRequest( void );
+void HandleSubscriptionRequest( void );
+//void HandleNotification( void );
 //--------------------------------------------------------------------
 
 void StartServer( void )
@@ -71,7 +73,16 @@ void HandleIncomeMessages( void )
         HandleSingleGetRequest();
         HandleSingleSetRequest();
         HandleResetRequest();
+        HandleSubscriptionRequest();
+        //HandleNotification();
     }
+}
+
+void HandleNotification(void)
+{
+    //HandleNotificationRequest();
+    //HandleNotificationSend();
+    //HandleNotificationResponses();
 }
 
 
@@ -301,5 +312,47 @@ void HandleResetRequest( void )
             #endif
 
         }
+    }
+}
+
+void HandleSubscriptionRequest( void )
+{
+    requestSubscription_t requestMessage;
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, SUBSCRIBE_REQUEST ) )
+    {
+        bool responseStatus = false;
+        requestSubscriptionBody_t * messageBody = (requestSubscriptionBody_t*)requestMessage.mtext;
+        long responseQueueId = messageBody->queueResponseId;
+        uint32_t requestId = messageBody->requestId;
+        subscription_t attribute = messageBody->attribute;
+        uint8_t instance = messageBody->instance;
+        uint8_t notificationId = 0U;
+
+        subscriptionRegistrationStatus_t status = SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST;
+        switch ( attribute )
+        {
+            case UNDER_VOLTAGE_SUBSCRIPTION:
+                status = RegisterSubscription( instance, UNDERVOLTAGE, &notificationId, responseQueueId );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseOnSubscriptionRequest( status, notificationId, responseQueueId, requestId );
+                break;
+            case OVER_VOLTAGE_SUBSCRIPTION:
+                status = RegisterSubscription( instance, OVERVOLTAGE, &notificationId, responseQueueId );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseOnSubscriptionRequest( status, notificationId, responseQueueId, requestId );
+                break;
+            default:
+                // Attribute not supported
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest ATTRIBUTE NOT SUPPORTED!\r\n");
+                #endif
+                //responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
+                break;
+        }
+
     }
 }
