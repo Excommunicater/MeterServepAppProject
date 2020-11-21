@@ -31,6 +31,12 @@ typedef enum attributesToGet
     MAXIMUM_PHASE_CURRENT
 } attributesToGet_t;
 
+typedef enum attributesToSet
+{
+    UNDER_VOLTAGE_THRESEHOLD,
+    OVER_VOLTAGE_THRESEHOLD
+} attributesToSet_t;
+
 typedef struct requestSingleGetBody
 {
     uint32_t requestId;          //< Id of partiqular request
