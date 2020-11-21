@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-set(thisProject simpleGet)
+set(thisProject getSingle)
 
 add_executable(${thisProject} 
-    simpleGetTest.c
+    getSingleTest.c
 )
 
 target_link_libraries(${thisProject} 

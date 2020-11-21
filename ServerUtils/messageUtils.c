@@ -11,10 +11,10 @@ typedef struct messageTypeSize
 
 const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 {
-    { SINGLE_GET_REQUEST,           sizeof(requestSingleGetBody_t) },
+    { GET_SINGLE_REQUEST,           sizeof(requestSingleGetBody_t) },
     { RESET_REQUEST,                sizeof(requestResetBody_t) },
-    { SET_EVENT_REQUEST,            1 },
-    { RESET_EVENT_REQUEST,          1 },
+    { SET_SINGLE_REQUEST,           sizeof(requestSingleSetBody_t) },
+    { SUBSCRIBE_REQUEST,            1},
     { SHORT_CONFIRMATION_RESPONSE,  sizeof(responseShortConfirmationBody_t) },
     { UINT32_RESPONSE,              sizeof(responseUint32Body_t) },
     { UINT64_RESPONSE,              1} 

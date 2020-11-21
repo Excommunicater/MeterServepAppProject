@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-# Separate test to build
+# Build support library
 add_subdirectory(testUtils)
-add_subdirectory(simpleGet)
+
+# Build tests
+add_subdirectory(getSingle)
+add_subdirectory(setSingle)
 add_subdirectory(resetRequest)

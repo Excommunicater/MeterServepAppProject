@@ -19,7 +19,7 @@ testResponses_t TestSingleRequestWithUint32Response(
     responseUint32Body_t * pResponseBody = (responseUint32Body_t*)responseUint32.mtext;
 
     //--Set Request Message-----------------------------------------------
-    request.mtype                   = SINGLE_GET_REQUEST;
+    request.mtype                   = GET_SINGLE_REQUEST;
     pRequestBody->requestId         = requestId;
     pRequestBody->attribute         = attribute;
     pRequestBody->instance          = instance;
@@ -27,7 +27,7 @@ testResponses_t TestSingleRequestWithUint32Response(
     //--------------------------------------------------------------------
 
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, SINGLE_GET_REQUEST, serverQueueId );
+    operationStatus = PushMessageToQueue( (void*)&request, GET_SINGLE_REQUEST, serverQueueId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -132,7 +132,7 @@ testResponses_t TestSingleRequestShortConfirmationResponse(
     responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
 
     //--Set Request Message-----------------------------------------------
-    request.mtype                   = SINGLE_GET_REQUEST;
+    request.mtype                   = GET_SINGLE_REQUEST;
     pRequestBody->requestId         = requestId;
     pRequestBody->attribute         = attribute;
     pRequestBody->instance          = instance;
@@ -168,6 +168,61 @@ testResponses_t TestSingleRequestShortConfirmationResponse(
     }
     return TEST_OK;
 }
+
+testResponses_t TestSetRequestWithShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId,
+    uint32_t valueToSet )
+{
+    bool operationStatus = false;
+    requestSingleSet_t request;
+    responseShortConfirmation_t responseShort;
+    requestSingleSetBody_t * pRequestBody = (requestSingleSetBody_t*)request.mtext;
+    responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+
+    //--Set Request Message-----------------------------------------------
+    request.mtype                   = SET_SINGLE_REQUEST;
+    pRequestBody->requestId         = requestId;
+    pRequestBody->queueResponseId   = responseQueueId;
+    pRequestBody->instance          = instance;
+    pRequestBody->attribute         = attribute;
+    pRequestBody->valueToSet        = valueToSet;
+    //--------------------------------------------------------------------
+    // Try to push Request to server
+    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
+
+    if ( GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
+    {
+        pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
+        if( pResponseBody->requestId != requestId )
+        {
+            return TEST_ERROR_SEGMENTATION;
+        }
+        if ( pResponseBody->confirmationValue != expectedStatus )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    else
+    {
+        return TEST_ERROR_RECIVE_RESPONSE;
+    }
+    return TEST_OK;
+}
+
 
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse )
 {

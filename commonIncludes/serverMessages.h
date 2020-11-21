@@ -11,10 +11,10 @@
 //--Request Data Types and Structures----------------------------------
 typedef enum messageTypeRequest
 {
-    SINGLE_GET_REQUEST = 1U,
+    GET_SINGLE_REQUEST = 1U,
     RESET_REQUEST,
-    SET_EVENT_REQUEST,
-    RESET_EVENT_REQUEST
+    SET_SINGLE_REQUEST,
+    SUBSCRIBE_REQUEST
 } messageTypeRequest_t;
 
 typedef enum attributesToGet
@@ -33,9 +33,19 @@ typedef enum attributesToGet
 
 typedef enum attributesToSet
 {
-    UNDER_VOLTAGE_THRESEHOLD,
+    UNDER_VOLTAGE_THRESEHOLD = MAXIMUM_PHASE_CURRENT + 1U,
     OVER_VOLTAGE_THRESEHOLD
 } attributesToSet_t;
+
+typedef enum attributesToReset
+{
+    RESET_MINIMUM_PHASE_VOLTAGE = OVER_VOLTAGE_THRESEHOLD + 1U,
+    RESET_MAXIMUM_PHASE_VOLTAGE,
+    RESET_MINIMUM_PHASE_CURRENT,
+    RESET_MAXIMUM_PHASE_CURRENT,
+    RESET_UNDER_VOLTAGE_THRESEHOLD,
+    RESET_OVER_VOLTAGE_THRESEHOLD
+} attributesToReset_t;
 
 typedef struct requestSingleGetBody
 {
@@ -51,14 +61,12 @@ typedef struct requestSingleGet
     char mtext[sizeof(requestSingleGetBody_t)];
 } requestSingleGet_t;
 
-// @note: Attributes to reset: 
-// MINIMUM_PHASE_VOLTAGE | MAXIMUM_PHASE_VOLTAGE | MINIMUM_PHASE_CURRENT | MAXIMUM_PHASE_CURRENT
 typedef struct requestResetBody
 {
     uint32_t requestId;          //< Id of partiqular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number
-    attributesToGet_t attribute; //< Attribute to reset
+    attributesToReset_t attribute; //< Attribute to reset
 } requestResetBody_t;
 
 typedef struct requestReset
@@ -66,6 +74,21 @@ typedef struct requestReset
     long mtype;
     char mtext[sizeof(requestResetBody_t)];
 } requestReset_t;
+
+typedef struct requestSingleSetBody
+{
+    uint32_t requestId;          //< Id of partiqular request
+    int queueResponseId;         //< To this queue ID response shall be sent
+    uint8_t instance;            //< Phaze number
+    attributesToSet_t attribute; //< Attribute number to set
+    uint32_t valueToSet;         //< Value to set
+} requestSingleSetBody_t;
+
+typedef struct requestSingleSet
+{
+    long mtype;
+    char mtext[sizeof(requestSingleSetBody_t)];
+} requestSingleSet_t;
 
 //--------------------------------------------------------------------
 

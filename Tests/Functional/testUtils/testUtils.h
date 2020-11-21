@@ -30,6 +30,7 @@ testResponses_t TestSingleRequestWithUint32Response(
     uint32_t expectedResponse,
     shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
+
 testResponses_t TestSingleRequestShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 
@@ -37,6 +38,7 @@ testResponses_t TestSingleRequestShortConfirmationResponse(
     int serverQueueId,
     shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
+
 testResponses_t TestResetRequestWithShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 
@@ -45,7 +47,14 @@ testResponses_t TestResetRequestWithShortConfirmationResponse(
     shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
 
-
+testResponses_t TestSetRequestWithShortConfirmationResponse( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId,
+    uint32_t valueToSet );
 
 void PrintTestResults( wholeTestResponse_t result, const char * testPath );
 void PrintTestResponse( testResponses_t response );

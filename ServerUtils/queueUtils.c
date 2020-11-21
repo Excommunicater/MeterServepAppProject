@@ -149,7 +149,7 @@ void CleanSrvQueue( void )
     {
         requestSingleGet_t requestSingle;
         requestReset_t requestReset;
-        GetMessageFromServerQueue( (void*)&requestSingle, SINGLE_GET_REQUEST );
+        GetMessageFromServerQueue( (void*)&requestSingle, GET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestReset, RESET_REQUEST );
     }
 }

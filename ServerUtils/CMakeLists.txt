@@ -6,6 +6,7 @@ add_library(${thisLibrary}
     dataUtils.c
     errorHandling.c
     messageUtils.c
+    notificationUtils.c
     queueUtils.c
     serverUtils.c
 )
