@@ -187,8 +187,11 @@ void PrintTestResults( wholeTestResponse_t result, const char * testPath  )
     printf(testPath);
     printf("\r\n");
     printf("--------------------------------------------------------------------\r\n");
+    printf("\033[1;32m"); //Set the text to the bold green  
     printf(" TEST PASSED:  %i\r\n", result.passTest);
+    printf("\033[1;31m"); //Set the text to the bold red
     printf(" TEST FAILED:  %i\r\n", result.numberOfTests - result.passTest);
+    printf("\033[1;0m"); //Resets the text to default color
     printf("--------------------------------------------------------------------\r\n");
 }
 
