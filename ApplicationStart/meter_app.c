@@ -1,7 +1,6 @@
 //--External includes-------------------------------------------------
 #include <stdio.h>              // pritnf()
 #include <sys/stat.h>           // mkfifo()
-#include <unistd.h>             // usleep()
 #include <sys/ipc.h>            // key_t
 #include <sys/msg.h>            // msgget()
 #include <stdlib.h>             // exit()
@@ -491,8 +490,8 @@ testResponses_t TestSingleRequestWithUint32Response(
         return TEST_ERROR_SENDING_REQUEST;
     }
 
-    // Wait a while
-    sleep(1);
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
     
     if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, responseQueueId ) )
     {
@@ -550,8 +549,8 @@ testResponses_t TestResetRequestWithShortConfirmationResponse(
     {
         return TEST_ERROR_SENDING_REQUEST;
     }
-    // Wait a while
-    sleep(1);
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
 
     if ( GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
     {
@@ -602,8 +601,9 @@ testResponses_t TestSingleRequestShortConfirmationResponse(
     {
         return TEST_ERROR_SENDING_REQUEST;
     }
-    // Wait a while
-    sleep(1);
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
+
     if ( GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, responseQueueId ) )
     {
         pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;

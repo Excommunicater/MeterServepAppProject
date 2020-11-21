@@ -45,7 +45,7 @@ void StartServer( void )
         ReadStructFromDev();
         StoreMaxMinValues();
         HandleIncomeMessages();
-        usleep(10000); // each secunde
+        //usleep(10000); // each secunde
     }
 }
 
