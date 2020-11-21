@@ -1,3 +1,4 @@
 #!/bin/sh
 ./build.sh
-./out/build/test/test
+./out/build/Tests/Functional/simpleGet/simpleGet
+./out/build/Tests/Functional/resetRequest/resetRequest

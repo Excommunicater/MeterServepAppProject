@@ -4,9 +4,6 @@ set(thisProject PhoenixRozmowaProject)
 
 project(${thisProject} )
 
-# Where to store executables and libraries??
-#set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
 # Libraries to build
 add_subdirectory(ServerUtils)
 
@@ -17,4 +14,4 @@ add_subdirectory(ApplicationStart)
 
 # Tests and test framework
 add_subdirectory(external/googletest)
-add_subdirectory(test)
+add_subdirectory(Tests)
