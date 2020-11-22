@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "projectGenerals.h"
+
 #define NUMBER_OF_REQUEST_TYPES  5
 #define NUMBER_OF_RESPONSE_TYPES 4
 
@@ -36,7 +38,9 @@ typedef enum attributesToGet
     MINIMUM_PHASE_VOLTAGE,
     MAXIMUM_PHASE_VOLTAGE,
     MINIMUM_PHASE_CURRENT,
-    MAXIMUM_PHASE_CURRENT
+    MAXIMUM_PHASE_CURRENT,
+    NUMBER_OF_SUBSCRIPTION,
+    NUMBER_OF_ACTIVE_SUBSCRIPTION
 } attributesToGet_t;
 
 typedef enum attributesToSet
@@ -52,7 +56,9 @@ typedef enum attributesToReset
     RESET_MINIMUM_PHASE_CURRENT,
     RESET_MAXIMUM_PHASE_CURRENT,
     RESET_UNDER_VOLTAGE_THRESEHOLD,
-    RESET_OVER_VOLTAGE_THRESEHOLD
+    RESET_OVER_VOLTAGE_THRESEHOLD,
+    UNSUBSCRIBE,
+    UNSUBSCRIBE_ALL
 } attributesToReset_t;
 
 typedef enum subscription
@@ -66,7 +72,7 @@ typedef enum subscriptionRegistrationStatus
     SUBSCRIPTION_REGISTERED = 0U,
     SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST,
     SUBSCRIPTION_LIST_FULL,
-    SUBSCRIBTION_ALREADY_EXIST
+    SUBSCRIPTION_ALREADY_EXIST
 } subscriptionRegistrationStatus_t;
 
 typedef enum shortConfirmationValues
@@ -95,10 +101,11 @@ typedef struct requestSingleGet
 
 typedef struct requestResetBody
 {
-    uint32_t requestId;          //< Id of particular request
-    int queueResponseId;         //< To this queue ID response shall be sent
-    uint8_t instance;            //< Phaze number
+    uint32_t requestId;            //< Id of particular request
+    int queueResponseId;           //< To this queue ID response shall be sent
+    uint8_t instance;              //< Phaze number or notificationId
     attributesToReset_t attribute; //< Attribute to reset
+    uint8_t additionalData;
 } requestResetBody_t;
 
 typedef struct requestReset
@@ -135,6 +142,25 @@ typedef struct requestSubscription
     long mtype;
     char mtext[sizeof(requestSubscriptionBody_t)];
 } requestSubscription_t;
+
+typedef struct notificationBody
+{
+    uint32_t requestId; 
+    uint8_t notificationId;
+    #if SERVER_64_BIT == true
+        uint64_t timeStamp;
+    #elif
+        uint32_t timeStamp;
+    #endif
+
+} notificationBody_t;
+
+typedef struct notificationMessage
+{
+    long mtype;
+    char mtext[sizeof(notificationBody_t)];
+} notificationMessage_t;
+
 //--------------------------------------------------------------------
 
 //--Response Data Types ----------------------------------------------

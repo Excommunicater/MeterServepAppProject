@@ -263,7 +263,6 @@ testResponses_t TestSubscribeRequestWithSubscriptionResponse(
         *notificationId = pResponseBody->notificationId;
         if( pResponseBody->requestId != requestId )
         {
-            printf("GetId = %i; Expected = %i\r\n", pResponseBody->requestId, requestId );
             return TEST_ERROR_SEGMENTATION;
         }
         if ( pResponseBody->confirmationValue != expectedStatus )
@@ -293,7 +292,7 @@ void PrintTestResults( wholeTestResponse_t result, const char * testPath  )
 {
     printf("--------------------------------------------------------------------\r\n");
     printf("                     T E S T  C O M P L E T E D                     \r\n");
-    printf(testPath);
+    printf("%s", testPath);
     printf("\r\n");
     printf("--------------------------------------------------------------------\r\n");
     printf("\033[1;32m"); //Set the text to the bold green  

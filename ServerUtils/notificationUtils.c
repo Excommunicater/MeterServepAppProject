@@ -1,14 +1,16 @@
 //--Local includes----------------------------------------------------
 #include "notificationUtils.h"
+#include "dataUtils.h" // GetInstatntenousPhaseVoltage()
 #include "errorHandling.h"
 #include "../commonIncludes/metering_interface.h" // PHASE_CNT
 //--------------------------------------------------------------------
 #include <stdbool.h>
 #include <stdio.h>  // printf()
 #include <stdlib.h> // malloc()
+#include <time.h>   // time()
 
 //--Defines-----------------------------------------------------------
-#define NU_DBG_PRNT
+//#define NU_DBG_PRNT
 //--------------------------------------------------------------------
 
 //--Local Structures--------------------------------------------------
@@ -18,17 +20,16 @@ typedef struct thresehold
     bool isSet;
 } thresehold_t;
 
-struct subscriptionRecord
+typedef struct subscriptionRecord
 {
     bool isActive;
     uint8_t phase; 
-    theseholdSetType_t type; 
+    theseholdType_t type; 
     uint8_t notificationId; 
     int notificationQueue;
+    uint32_t sentNotificationMessageId;
     struct subscriptionRecord * pNext;
-};
-
-typedef struct subscriptionRecord subscriptionRecord_t;
+} subscriptionRecord_t;
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
@@ -43,16 +44,18 @@ uint8_t actualNumberOfSubscriptions = 0U;
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
-void AddNewSubscription( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue );
+void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
 uint8_t GetNewUniqueNotificationId( void );
 subscriptionRecord_t * FindLastElement( void );
-bool CheckSubscriptionDuplication( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue );
+bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
+bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription );
+uint32_t GetUniqueNotificationMessageId( void );
 #ifdef NU_DBG_PRNT
     void PrintRecordList( void );
 #endif
 //--------------------------------------------------------------------
 
-shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdSetType_t typeToSet, uint32_t valueToSet )
+shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdType_t typeToSet, uint32_t valueToSet )
 {
     
     if ( ( typeToSet > OVERVOLTAGE ) || ( typeToSet < UNDERVOLTAGE ) )
@@ -61,7 +64,7 @@ shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdSetType_
     }
 
     shortConfirmationValues_t respVal = ERROR;
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         if ( typeToSet == UNDERVOLTAGE )
         {
@@ -82,14 +85,14 @@ shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdSetType_
     return respVal;
 }
 
-shortConfirmationValues_t ResetVoltageThresehold( uint8_t phase, theseholdSetType_t typeToReset )
+shortConfirmationValues_t ResetVoltageThresehold( uint8_t phase, theseholdType_t typeToReset )
 {
     if ( ( typeToReset > OVERVOLTAGE ) || ( typeToReset < UNDERVOLTAGE ) )
     {
         ReportAndExit("ResetVoltageThresehold - passed bad value to set!");
     }
     shortConfirmationValues_t respVal = ERROR;
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         if ( typeToReset == UNDERVOLTAGE )
         {
@@ -108,11 +111,12 @@ shortConfirmationValues_t ResetVoltageThresehold( uint8_t phase, theseholdSetTyp
     return respVal;
 }
 
-subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue )
+subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
     printf("RegisterSubscription\r\n");
-
-    PrintRecordList();
+    #ifdef NU_DBG_PRNT
+        PrintRecordList();
+    #endif
     subscriptionRegistrationStatus_t retVal = SUBSCRIPTION_LIST_FULL;
     if ( actualNumberOfSubscriptions < MAXIMUM_SUBSCRIPTION_NUMBER )
     {
@@ -129,14 +133,14 @@ subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdS
             }
             else
             {
-                retVal = SUBSCRIBTION_ALREADY_EXIST;
+                retVal = SUBSCRIPTION_ALREADY_EXIST;
             }
         }
     }
     return retVal;
 }
 
-void AddNewSubscription( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue )
+void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
     #ifdef NU_DBG_PRNT
         printf("AddNewSubscription\r\n");
@@ -169,6 +173,7 @@ void AddNewSubscription( uint8_t phase, theseholdSetType_t type, uint8_t * notif
     pNewRecord->phase               = phase;
     pNewRecord->type                = type;
     pNewRecord->pNext               = (subscriptionRecord_t*)NULL;
+    *notificationId = newId;
     #ifdef NU_DBG_PRNT
         printf("Created new subscription!");
         printf("NI:%i; NQ=%i; P=%i; T=%i; TS=%i\r\n", pNewRecord->notificationId, pNewRecord->notificationQueue, pNewRecord->phase, pNewRecord->type, actualNumberOfSubscriptions );
@@ -206,7 +211,7 @@ subscriptionRecord_t* FindLastElement( void )
     return pRetVal;
 }
 
-bool CheckSubscriptionDuplication( uint8_t phase, theseholdSetType_t type, uint8_t * notificationId, int notificationQueue )
+bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
     subscriptionRecord_t * pTemp = pSubscriptionListHead;
     bool retVal = false;
@@ -223,6 +228,161 @@ bool CheckSubscriptionDuplication( uint8_t phase, theseholdSetType_t type, uint8
         pTemp = pTemp->pNext;
     }
     return retVal;
+}
+
+shortConfirmationValues_t Unsubscribe( uint8_t notificationId )
+{
+    #ifdef NU_DBG_PRNT
+        printf("Unsubscribe - ID=%i\r\n", notificationId);
+        void PrintRecordList();
+    #endif
+    shortConfirmationValues_t retVal = BAD_INSTANCE;
+    subscriptionRecord_t * pPrev = (subscriptionRecord_t*)NULL;
+    subscriptionRecord_t * pRemove = pSubscriptionListHead;
+
+    // Record to remove is the first one
+    if ( ( pRemove != (subscriptionRecord_t*)NULL ) && ( pRemove->notificationId == notificationId ) )
+    {
+        pSubscriptionListHead = pRemove->pNext;
+        free( pRemove );
+        retVal = OK;
+        #ifdef NU_DBG_PRNT
+            printf("Find element (first) and removed\r\n");
+            void PrintRecordList( void );
+        #endif
+        actualNumberOfSubscriptions--;
+        return retVal;
+    }
+
+    while ( pRemove != (subscriptionRecord_t*)NULL )
+    {
+        if ( pRemove->notificationId == notificationId )
+        {
+            pPrev->pNext = pRemove->pNext;
+            free( pRemove );
+            retVal = OK;
+            #ifdef NU_DBG_PRNT
+                printf("Find element and removed\r\n");
+                void PrintRecordList( void );
+            #endif
+            actualNumberOfSubscriptions--;
+            return retVal;
+        }
+        else
+        {
+            pPrev = pRemove;
+            pRemove = pRemove->pNext;
+        }
+    }
+    #ifdef NU_DBG_PRNT
+        printf("Element not found!\r\n");
+    #endif
+    return retVal;
+}
+
+shortConfirmationValues_t UnsubscribeAll( void )
+{
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+    subscriptionRecord_t * pRemove = (subscriptionRecord_t*)NULL;
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        pRemove = pTemp;
+        pTemp = pTemp->pNext;
+        free( pRemove );
+        actualNumberOfSubscriptions--;
+    }
+    pSubscriptionListHead = (subscriptionRecord_t*)NULL;
+    return OK;
+}
+
+uint32_t GetNumberOfSubscriptions( void )
+{
+    return actualNumberOfSubscriptions;
+}
+
+uint32_t GetNumberOfActiveSubscriptions( void )
+{
+    uint32_t numberOfActiveSubscription = 0U;
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( pTemp->isActive == true )
+        {
+            numberOfActiveSubscription++;
+        }
+        pTemp = pTemp->pNext;
+    }
+    return numberOfActiveSubscription;
+}
+
+bool PopNotification( notification_t * notification )
+{
+    bool status = false;
+    notification_t retVal = {0};
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( CheckSubscriptionForNotification( pTemp ) )
+        {
+            // Block checking this notification until client send OK response for this particular notification
+            pTemp->isActive                  = false;
+            pTemp->sentNotificationMessageId = GetUniqueNotificationMessageId();
+            #if SERVER_64_BIT == true
+                retVal.timeStamp  = (uint64_t)time(NULL);
+            #elif
+                retVal.timeStamp  = (uint32_t)time(NULL);
+            #endif
+            retVal.notificationID        = pTemp->notificationId;
+            retVal.queueToSend           = pTemp->notificationQueue;
+            retVal.notificationMessageId = pTemp->sentNotificationMessageId;
+            memcpy( notification, &retVal, sizeof(notification_t) );
+            status = true;
+            break;
+        }
+        pTemp = pTemp->pNext;
+    }
+    return status;
+}
+
+
+bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription )
+{
+    bool retVal = false;
+    if ( subscription->isActive )
+    {
+        uint8_t phaseToCheck = subscription->phase;
+
+        shortConfirmationValues_t status;
+        uint32_t instatntenousPhaseVoltage = GetInstatntenousPhaseVoltage( &status, phaseToCheck );
+        if ( status != OK )
+        {
+            ReportAndExit("CheckSubscriptionForNotification - Problem getting Instatntenous Phase Voltage...");
+        }
+
+        if ( ( subscription->type == UNDERVOLTAGE ) && ( underVoltageThresehold[phaseToCheck].isSet ) )
+        {
+            if ( instatntenousPhaseVoltage < underVoltageThresehold[phaseToCheck].value )
+            {
+                retVal = true;
+            }
+        }
+        else if ( ( subscription->type == OVERVOLTAGE ) && ( overVoltageThresehold[phaseToCheck].isSet ) )
+        {
+            if ( instatntenousPhaseVoltage > overVoltageThresehold[phaseToCheck].value )
+            {
+                retVal = true;
+            }
+        }
+    }
+    return retVal;
+}
+
+uint32_t GetUniqueNotificationMessageId( void )
+{
+    static uint32_t id = 1;
+    id++;
+    return id;
 }
 
 

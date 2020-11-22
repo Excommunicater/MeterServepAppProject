@@ -33,12 +33,13 @@ static int serverReceiveQueueId = 0;
 
 //--Private Function Declaration--------------------------------------
 void InitFifo( void );
-void HandleIncomeMessages( void );
+void HandleIncomingMessages( void );
+void HandleOutgoingMessages( void );
 void HandleSingleGetRequest( void );
 void HandleSingleSetRequest( void );
 void HandleResetRequest( void );
 void HandleSubscriptionRequest( void );
-//void HandleNotification( void );
+void HandleSendingNotifications( void );
 //--------------------------------------------------------------------
 
 void StartServer( void )
@@ -48,8 +49,8 @@ void StartServer( void )
     {
         ReadStructFromDev();
         StoreMaxMinValues();
-        HandleIncomeMessages();
-        //usleep(10000); // each secunde
+        HandleIncomingMessages();
+        HandleOutgoingMessages();
     }
 }
 
@@ -66,7 +67,7 @@ void InitFifo( void )
     mkfifo(DEV_FILE, 0666);
 }
 
-void HandleIncomeMessages( void )
+void HandleIncomingMessages( void )
 {
     while ( GetNumberOfMessagesInQueue(serverReceiveQueueId) )
     {
@@ -74,15 +75,27 @@ void HandleIncomeMessages( void )
         HandleSingleSetRequest();
         HandleResetRequest();
         HandleSubscriptionRequest();
-        //HandleNotification();
     }
 }
 
-void HandleNotification(void)
+void HandleOutgoingMessages( void )
 {
-    //HandleNotificationRequest();
-    //HandleNotificationSend();
-    //HandleNotificationResponses();
+    HandleSendingNotifications();
+}
+
+void HandleSendingNotifications( void )
+{
+    notification_t notification;
+    while ( PopNotification( &notification ) )
+    {
+        if ( !SendNotificationMessage( &notification ) )
+        {
+            // HANDLE IT!
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING SENDING notification!\r\n");
+            #endif
+        }
+    }
 }
 
 
@@ -173,7 +186,22 @@ void HandleSingleGetRequest( void )
                 #endif
                 responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-        
+
+            case NUMBER_OF_SUBSCRIPTION:
+                returnUint32Value = GetNumberOfSubscriptions();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::NUMBER_OF_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
+                break;
+
+            case NUMBER_OF_ACTIVE_SUBSCRIPTION:
+                returnUint32Value = GetNumberOfActiveSubscriptions();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::NUMBER_OF_ACTIVE_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
+                break;
             default:
                 // Attribute not supported
                 #ifdef SU_DBG_PRNT
@@ -200,12 +228,12 @@ void HandleSingleSetRequest( void )
     {
         bool responseStatus = false;
         requestSingleSetBody_t * messageBody = (requestSingleSetBody_t*)requestMessage.mtext;
-        long responseQueueId = messageBody->queueResponseId;
-        uint32_t requestId = messageBody->requestId;
-        attributesToSet_t attribute = messageBody->attribute;
-        uint8_t instance = messageBody->instance;
-        uint32_t valueToSet = messageBody->valueToSet;
-        shortConfirmationValues_t status = ERROR;
+        long responseQueueId                 = messageBody->queueResponseId;
+        uint32_t requestId                   = messageBody->requestId;
+        attributesToSet_t attribute          = messageBody->attribute;
+        uint8_t instance                     = messageBody->instance;
+        uint32_t valueToSet                  = messageBody->valueToSet;
+        shortConfirmationValues_t status     = ERROR;
         
         switch ( attribute )
         {
@@ -297,6 +325,20 @@ void HandleResetRequest( void )
                 #endif
                 responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
+            case UNSUBSCRIBE:
+                status = Unsubscribe( instance );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::UNSUBSCRIBE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case UNSUBSCRIBE_ALL:
+                status = UnsubscribeAll();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::UNSUBSCRIBE_ALL rID = %i stat = %i\r\n", requestId, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
             default:
                 // Attribute not supported
                 #ifdef SU_DBG_PRNT
@@ -350,9 +392,14 @@ void HandleSubscriptionRequest( void )
                 #ifdef SU_DBG_PRNT
                     printf("HandleSubscriptionRequest ATTRIBUTE NOT SUPPORTED!\r\n");
                 #endif
-                //responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
+                responseStatus = ResponseOnSubscriptionRequest( SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST, notificationId, responseQueueId, requestId );
                 break;
         }
-
+        if ( !responseStatus )
+        {
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING RESPONDING!\r\n");
+            #endif
+        }
     }
 }

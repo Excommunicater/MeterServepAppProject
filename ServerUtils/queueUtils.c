@@ -150,8 +150,10 @@ void CleanSrvQueue( void )
     for (uint32_t i = 0U; i < messagesInQueue; i++)
     {
         requestSingleGet_t requestSingle;
+        requestSingleSet_t requestSingleSet;
         requestReset_t requestReset;
         requestSubscription_t requestSubscription;
+        GetMessageFromServerQueue( (void*)&requestSingle, SET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestSingle, GET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestReset, RESET_REQUEST );
         GetMessageFromServerQueue( (void*)&requestSubscription, SUBSCRIBE_REQUEST );

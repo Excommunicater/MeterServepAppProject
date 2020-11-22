@@ -5,5 +5,7 @@
 #define SERVER_VERSION      01234567U
 #define SERVER_PATH_NAME    "./commonIncludes/serverMessages.h"
 
+#define SERVER_64_BIT       true
+
 
 #endif // PROJECT_GENERALS_H
