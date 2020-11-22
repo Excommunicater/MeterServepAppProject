@@ -133,15 +133,17 @@ void RemoveQueue( int queueId )
 void CleanAppQueue( int queueId )
 {
     uint32_t messagesInQueue = GetNumberOfMessagesInQueue(queueId);
-    //Temporary solution - have to get all types of responses....
+    //RemoveQueue(queueId);
     for (uint32_t i = 0U; i < messagesInQueue; i++)
     {
         responseUint32_t responseUint32;
         responseShortConfirmation_t responseShort;
         responseSubscription_t responseSubscription;
+        notificationMessage_t notificationMesssage;
         GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
         GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, queueId );
         GetMessageFromQueue( (void*)&responseSubscription, SUBSCRIPTION_RESPONSE, queueId );
+        GetMessageFromQueue( (void*)&notificationMesssage, NOTIFICATION, queueId );
     }
 }
 
@@ -155,9 +157,48 @@ void CleanSrvQueue( void )
         requestSingleSet_t requestSingleSet;
         requestReset_t requestReset;
         requestSubscription_t requestSubscription;
+
         GetMessageFromServerQueue( (void*)&requestSingle, SET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestSingle, GET_SINGLE_REQUEST );
         GetMessageFromServerQueue( (void*)&requestReset, RESET_REQUEST );
         GetMessageFromServerQueue( (void*)&requestSubscription, SUBSCRIBE_REQUEST );
     }
 }
+
+/*void LookForMessageInQueue( int queue )
+{
+    for (long i = 1U; i < 2147483646; i++)
+    {
+        uint8_t respBuff[2048];
+        if ( msgrcv(queue, 
+                    respBuff, 
+                    128, 
+                    i, 
+                    MSG_NOERROR | IPC_NOWAIT ) == -1 )
+        {
+            if ( errno != ENOMSG ) 
+            {
+                ReportAndExit("Unexpected error while getting message from queue...\r\n");
+            }
+        }
+        else
+        {
+            printf("FOUND MESSAGE TYPE! %i\r\n", i);
+            return i;
+        }
+    }
+
+    for (long i = -1U; i > -2147483646; i--)
+    {
+        uint8_t respBuff[2048];
+
+        if ( GetMessageFromQueue( (void*)&respBuff, i , queue) == true)
+        {
+            printf("FOUND MESSAGE TYPE! %i\r\n", i);
+            return i;
+        }
+    }
+
+    return 0;
+}
+*/

@@ -117,7 +117,7 @@ testResponses_t TestResetRequestWithShortConfirmationResponse(
     return TEST_OK;
 }
 
-testResponses_t TestSingleRequestShortConfirmationResponse( 
+testResponses_t TestGetSingleRequestShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 
     int responseQueueId, 
@@ -275,6 +275,34 @@ testResponses_t TestSubscribeRequestWithSubscriptionResponse(
         return TEST_ERROR_RECIVE_RESPONSE;
     }
     return TEST_OK;
+}
+
+testResponses_t TestGetNotification( 
+    uint8_t expectedNotificationId,
+    uint32_t * requestId,
+    int queue,
+    #if SERVER_64_BIT == true
+        uint64_t * timeStamp
+    #elif
+        uint32_t * timeStamp
+    #endif
+
+    )
+{
+    notificationMessage_t notificationMessage;
+    notificationMessageBody_t * notificationMessageBody = (notificationMessageBody_t*)notificationMessage.mtext;
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(queue) == 0U );
+    if ( GetMessageFromQueue( (void*)&notificationMessage, NOTIFICATION, queue ) )
+    {
+        *requestId = notificationMessageBody->requestId;
+        *timeStamp = notificationMessageBody->timeStamp;
+        if ( notificationMessageBody->notificationId != expectedNotificationId )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    return TEST_OK;    
 }
 
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse )

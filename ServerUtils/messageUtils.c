@@ -15,10 +15,10 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
     { RESET_REQUEST,                sizeof(requestResetBody_t) },
     { SET_SINGLE_REQUEST,           sizeof(requestSingleSetBody_t) },
     { SUBSCRIBE_REQUEST,            sizeof(requestSubscriptionBody_t)},
-    { NOTIFICATION,                 sizeof(notificationBody_t)},
+    { NOTIFICATION,                 sizeof(notificationMessageBody_t)},
     { SHORT_CONFIRMATION_RESPONSE,  sizeof(responseShortConfirmationBody_t) },
     { UINT32_RESPONSE,              sizeof(responseUint32Body_t) },
-    { UINT64_RESPONSE,              1},
+    { UINT64_RESPONSE,              sizeof(responseUint64_t)},
     { SUBSCRIPTION_RESPONSE,        sizeof(responseSubscriptionBody_t)}
 };
 
@@ -47,7 +47,7 @@ bool ResponseUint32( uint32_t valueToResponse, shortConfirmationValues_t status,
     responseBody->value     = valueToResponse;
     responseBody->status    = status;
     
-    if ( PushMessageToQueue((void*)&response, UINT32_RESPONSE, responseQueue ) )
+    if ( PushMessageToQueue( (void*)&response, UINT32_RESPONSE, responseQueue ) )
     {
         #ifdef DEBUG_PRINTOUT
             printf("Respond properly with UINT32_RESPONSE \r\n" );
@@ -68,7 +68,7 @@ bool ResponseShortConfirmation( shortConfirmationValues_t valueToresponse, long 
     responseBody->requestId         = requestId;
     responseBody->confirmationValue = valueToresponse;
 
-    if ( PushMessageToQueue((void*)&response, SHORT_CONFIRMATION_RESPONSE, responseQueue ) )
+    if ( PushMessageToQueue( (void*)&response, SHORT_CONFIRMATION_RESPONSE, responseQueue ) )
     {
         #ifdef DEBUG_PRINTOUT
             printf("Respond properly with SHORT_CONFIRMATION_RESPONSE \r\n" );
@@ -90,7 +90,7 @@ bool ResponseOnSubscriptionRequest( subscriptionRegistrationStatus_t confirmatio
     responseBody->confirmationValue = confirmation;
     responseBody->notificationId    = notificationId;
 
-    if ( PushMessageToQueue((void*)&response, SUBSCRIPTION_RESPONSE, responseQueue ) )
+    if ( PushMessageToQueue( (void*)&response, SUBSCRIPTION_RESPONSE, responseQueue ) )
     {
         #ifdef DEBUG_PRINTOUT
             printf("Respond properly with SUBSCRIPTION_RESPONSE \r\n" );
@@ -101,17 +101,22 @@ bool ResponseOnSubscriptionRequest( subscriptionRegistrationStatus_t confirmatio
     return retVal;
 }
 
-bool SendNotificationMessage( notification_t * pNotification )
+#if SERVER_64_BIT == true
+    bool SendNotificationMessage( uint8_t notificationId, long queue, uint32_t requestId, uint64_t timeStamp )
+#elif
+    bool SendNotificationMessage( uint8_t notificationId, uint32_t requestId, uint32_t timeStamp )
+#endif
 {
     bool retVal = false;
     notificationMessage_t messageToSend;
-    notificationBody_t * messageBody = (notificationBody_t*)messageToSend.mtext;
+    messageToSend.mtype = NOTIFICATION;
+    notificationMessageBody_t * messageBody = (notificationMessageBody_t*)messageToSend.mtext;
+    
+    messageBody->requestId       = requestId;
+    messageBody->notificationId  = notificationId;
+    messageBody->timeStamp       = timeStamp;
 
-    messageBody->requestId       = pNotification->notificationMessageId;
-    messageBody->notificationId  = pNotification->notificationID;
-    messageBody->timeStamp       = pNotification->timeStamp;
-
-    if ( PushMessageToQueue((void*)&messageToSend, NOTIFICATION, pNotification->queueToSend ) )
+    if ( PushMessageToQueue( (void*)&messageToSend, NOTIFICATION, queue ) )
     {
         #ifdef DEBUG_PRINTOUT
             printf("Sent properly NOTIFICATION \r\n" );

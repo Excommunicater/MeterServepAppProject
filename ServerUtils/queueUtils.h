@@ -15,5 +15,6 @@ bool PushMessageToQueue( void * message, long messageType, int queueId );
 void RemoveQueue( int queueId );
 void CleanAppQueue( int queueId );
 void CleanSrvQueue( void );
+//void LookForMessageInQueue( int queue );
 
 #endif //QUEUE_UTILS_H

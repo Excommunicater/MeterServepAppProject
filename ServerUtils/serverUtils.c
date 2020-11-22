@@ -88,7 +88,11 @@ void HandleSendingNotifications( void )
     notification_t notification;
     while ( PopNotification( &notification ) )
     {
-        if ( !SendNotificationMessage( &notification ) )
+        bool sendStatus = SendNotificationMessage(  notification.notificationID, 
+                                                    notification.queueToSend, 
+                                                    notification.notificationMessageId, 
+                                                    notification.timeStamp );
+        if ( !sendStatus )
         {
             // HANDLE IT!
             #ifdef SU_DBG_PRNT
@@ -248,7 +252,7 @@ void HandleSingleSetRequest( void )
             case OVER_VOLTAGE_THRESEHOLD:
                 status = SetVoltageThresehold( instance, OVERVOLTAGE, valueToSet );
                 #ifdef SU_DBG_PRNT
-                    printf("HandleResetRequest::MAXIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::OVER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
@@ -384,7 +388,7 @@ void HandleSubscriptionRequest( void )
             case OVER_VOLTAGE_SUBSCRIPTION:
                 status = RegisterSubscription( instance, OVERVOLTAGE, &notificationId, responseQueueId );
                 #ifdef SU_DBG_PRNT
-                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleSubscriptionRequest::OVER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = ResponseOnSubscriptionRequest( status, notificationId, responseQueueId, requestId );
                 break;

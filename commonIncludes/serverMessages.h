@@ -163,12 +163,12 @@ typedef struct notificationBody
         uint32_t timeStamp;
     #endif
 
-} notificationBody_t;
+} notificationMessageBody_t;
 
 typedef struct notificationMessage
 {
     long mtype;
-    char mtext[sizeof(notificationBody_t)];
+    char mtext[sizeof(notificationMessageBody_t)];
 } notificationMessage_t;
 
 //--------------------------------------------------------------------

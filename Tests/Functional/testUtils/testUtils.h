@@ -31,7 +31,7 @@ testResponses_t TestSingleRequestWithUint32Response(
     shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
 
-testResponses_t TestSingleRequestShortConfirmationResponse( 
+testResponses_t TestGetSingleRequestShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 
     int responseQueueId, 
@@ -64,6 +64,17 @@ testResponses_t TestSubscribeRequestWithSubscriptionResponse(
     subscriptionRegistrationStatus_t expectedStatus,
     uint32_t requestId,
     uint8_t * notificationId );
+
+testResponses_t TestGetNotification( 
+    uint8_t expectedNotificationId,
+    uint32_t * requestId,
+    int queue,
+    #if SERVER_64_BIT == true
+        uint64_t * timeStamp
+    #elif
+        uint32_t * timeStamp
+    #endif
+    );
 
 void PrintTestResults( wholeTestResponse_t result, const char * testPath );
 void PrintTestResponse( testResponses_t response );

@@ -267,7 +267,7 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 19 - Request Not supported attribute
-    testResponse = TestSingleRequestShortConfirmationResponse(
+    testResponse = TestGetSingleRequestShortConfirmationResponse(
         1U,                             //< Good instance number
         97U,                            //< Get not existing attribute
         appQueueId,                     //< Pass test response queue ID
