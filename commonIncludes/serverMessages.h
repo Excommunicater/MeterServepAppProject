@@ -16,15 +16,19 @@ typedef enum messageTypeRequest
     RESET_REQUEST,
     SET_SINGLE_REQUEST,
     SUBSCRIBE_REQUEST,
-    NOTIFICATION
+    NOTIFICATION,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_REQUEST_TYPE 
 } messageTypeRequest_t;
 
 typedef enum messageTypeResponse
 {
-    SHORT_CONFIRMATION_RESPONSE = NUMBER_OF_REQUEST_TYPES + 1,
+    SHORT_CONFIRMATION_RESPONSE = LAST_REQUEST_TYPE,
     UINT32_RESPONSE,
     UINT64_RESPONSE,
-    SUBSCRIPTION_RESPONSE
+    SUBSCRIPTION_RESPONSE,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_RESPONSE_TYPE 
 } messageTypeResponse_t;
 
 typedef enum attributesToGet
@@ -40,25 +44,31 @@ typedef enum attributesToGet
     MINIMUM_PHASE_CURRENT,
     MAXIMUM_PHASE_CURRENT,
     NUMBER_OF_SUBSCRIPTION,
-    NUMBER_OF_ACTIVE_SUBSCRIPTION
+    NUMBER_OF_ACTIVE_SUBSCRIPTION,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_GET  
 } attributesToGet_t;
 
 typedef enum attributesToSet
 {
-    UNDER_VOLTAGE_THRESEHOLD = MAXIMUM_PHASE_CURRENT + 1U,
-    OVER_VOLTAGE_THRESEHOLD
+    UNDER_VOLTAGE_THRESEHOLD = LAST_ATTRIBUTE_NUMBER_TO_GET,
+    OVER_VOLTAGE_THRESEHOLD,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_SET
 } attributesToSet_t;
 
 typedef enum attributesToReset
 {
-    RESET_MINIMUM_PHASE_VOLTAGE = OVER_VOLTAGE_THRESEHOLD + 1U,
+    RESET_MINIMUM_PHASE_VOLTAGE = LAST_ATTRIBUTE_NUMBER_TO_SET,
     RESET_MAXIMUM_PHASE_VOLTAGE,
     RESET_MINIMUM_PHASE_CURRENT,
     RESET_MAXIMUM_PHASE_CURRENT,
     RESET_UNDER_VOLTAGE_THRESEHOLD,
     RESET_OVER_VOLTAGE_THRESEHOLD,
     UNSUBSCRIBE,
-    UNSUBSCRIBE_ALL
+    UNSUBSCRIBE_ALL,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_RESET
 } attributesToReset_t;
 
 typedef enum subscription

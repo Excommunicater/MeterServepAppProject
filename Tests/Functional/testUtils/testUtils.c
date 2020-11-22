@@ -139,7 +139,7 @@ testResponses_t TestSingleRequestShortConfirmationResponse(
     pRequestBody->queueResponseId   = responseQueueId;
     //--------------------------------------------------------------------
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+    operationStatus = PushMessageToQueue( (void*)&request, GET_SINGLE_REQUEST, serverQueueId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -193,7 +193,7 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
     pRequestBody->valueToSet        = valueToSet;
     //--------------------------------------------------------------------
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+    operationStatus = PushMessageToQueue( (void*)&request, SET_SINGLE_REQUEST, serverQueueId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function

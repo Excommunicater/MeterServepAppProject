@@ -6,7 +6,10 @@ add_executable(${thisProject}
     serverStart.c
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
+
 target_link_libraries(${thisProject} 
     serverUtils
 )
+
 

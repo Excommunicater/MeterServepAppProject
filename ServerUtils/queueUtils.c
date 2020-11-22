@@ -72,6 +72,7 @@ bool PushMessageToQueue( void * message, long messageType, int queueId )
 
 uint32_t GetNumberOfMessagesInQueue( int queueId )
 {
+    
     struct msqid_ds queueStructure;
     if ( msgctl(queueId, IPC_STAT, &queueStructure) != 0 )
     {
@@ -79,6 +80,7 @@ uint32_t GetNumberOfMessagesInQueue( int queueId )
     }
     //msg_qnum is msqid_ds type which is unsigned long.
     return (uint32_t)queueStructure.msg_qnum; 
+    
 }
 
 bool GetMessageFromServerQueue( void * message, long messageType  )

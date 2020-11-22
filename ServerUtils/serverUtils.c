@@ -223,7 +223,7 @@ void HandleSingleGetRequest( void )
 
 void HandleSingleSetRequest( void )
 {
-    requestSingleGet_t requestMessage;
+    requestSingleSet_t requestMessage;
     if ( GetMessageFromServerQueue( (void *)&requestMessage, SET_SINGLE_REQUEST ) )
     {
         bool responseStatus = false;
@@ -239,6 +239,7 @@ void HandleSingleSetRequest( void )
         {
             case UNDER_VOLTAGE_THRESEHOLD:
                 status = SetVoltageThresehold( instance, UNDERVOLTAGE, valueToSet );
+
                 #ifdef SU_DBG_PRNT
                     printf("HandleSingleSetRequest::UNDER_VOLTAGE_THRESEHOLD rID = %i v = i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
