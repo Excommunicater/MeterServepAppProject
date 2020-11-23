@@ -18,7 +18,12 @@
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
-//#define DEBUGING_READ_DEFINED_VALUES  //< Uncomment for do not use meter server; Help with debugging!
+#define BLOCKING_METER_READOUT     1
+#define NON_BLOCKING_METER_READOUT 2
+#define NO_METER_HARDCODED_VALUES  3
+
+#define TYPE_OF_DATA_READOUT BLOCKING_METER_READOUT
+
 //--------------------------------------------------------------------
 
 //--Local Structures--------------------------------------------------
@@ -122,21 +127,40 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
 }
 
 
-    void ReadStructFromDev( void )
+void ReadStructFromDev( void )
+{
+#if TYPE_OF_DATA_READOUT == BLOCKING_METER_READOUT
+    int fifoFile = open(DEV_FILE, O_RDONLY);
+    read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
+    // Add to last read values data from previous powercycle
+    lastReadHardwareRegister.per_phase[0].ai += storedLastPowerCycleHardwareRegister.per_phase[0].ai; 
+    lastReadHardwareRegister.per_phase[1].ai += storedLastPowerCycleHardwareRegister.per_phase[1].ai; 
+    lastReadHardwareRegister.per_phase[2].ai += storedLastPowerCycleHardwareRegister.per_phase[2].ai;
+    lastReadHardwareRegister.per_phase[0].ae += storedLastPowerCycleHardwareRegister.per_phase[0].ae;
+    lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+    lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+    StoreNonVolatileData( &lastReadHardwareRegister, sizeof(meter_hw_registers_t) );
+    close(fifoFile);
+#elif TYPE_OF_DATA_READOUT == NON_BLOCKING_METER_READOUT
+    struct pollfd fdarray [1];
+    int fifoFile = open(DEV_FILE, O_RDONLY);
+    fdarray[0].fd = fifoFile;
+    fdarray[0].events = POLLIN;
+    int rc = poll(fdarray, 1, 1);
+    if ( ( rc == 1 ) && ( fdarray[0].revents == POLLIN ) )
     {
-#ifndef DEBUGING_READ_DEFINED_VALUES
-        struct pollfd fdarray [1];
-        int fifoFile = open(DEV_FILE, O_RDONLY);
-        fdarray[0].fd = fifoFile;
-        fdarray[0].events = POLLIN;
-
-        int rc = poll(fdarray, 1, 1);
-
-        if ( ( rc == 1 ) && ( fdarray[0].revents == POLLIN ) )
-        {
-            read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
-#endif
-#ifdef DEBUGING_READ_DEFINED_VALUES
+        read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
+        // Add to last read values data from previous powercycle
+        lastReadHardwareRegister.per_phase[0].ai += storedLastPowerCycleHardwareRegister.per_phase[0].ai; 
+        lastReadHardwareRegister.per_phase[1].ai += storedLastPowerCycleHardwareRegister.per_phase[1].ai; 
+        lastReadHardwareRegister.per_phase[2].ai += storedLastPowerCycleHardwareRegister.per_phase[2].ai;
+        lastReadHardwareRegister.per_phase[0].ae += storedLastPowerCycleHardwareRegister.per_phase[0].ae;
+        lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+        lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+        StoreNonVolatileData( &lastReadHardwareRegister, sizeof(meter_hw_registers_t) );
+    }
+    close(fifoFile);
+#elif TYPE_OF_DATA_READOUT == NO_METER_HARDCODED_VALUES
         lastReadHardwareRegister.per_phase[0].v    = 102U;
         lastReadHardwareRegister.per_phase[0].i    = 102U;
         lastReadHardwareRegister.per_phase[0].ai   = 102U;
@@ -155,20 +179,6 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
         lastReadHardwareRegister.current_angles[0] = 102U;
         lastReadHardwareRegister.current_angles[1] = 102U;
         lastReadHardwareRegister.current_angles[2] = 102U;
-#endif
-            // Add to last read values data from previous powercycle
-            lastReadHardwareRegister.per_phase[0].ai += storedLastPowerCycleHardwareRegister.per_phase[0].ai; 
-            lastReadHardwareRegister.per_phase[1].ai += storedLastPowerCycleHardwareRegister.per_phase[1].ai; 
-            lastReadHardwareRegister.per_phase[2].ai += storedLastPowerCycleHardwareRegister.per_phase[2].ai;
-            lastReadHardwareRegister.per_phase[0].ae += storedLastPowerCycleHardwareRegister.per_phase[0].ae;
-            lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
-            lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
-            //-----------------------------------------------------------------------
-#ifndef DEBUGING_READ_DEFINED_VALUES
-            StoreNonVolatileData( &lastReadHardwareRegister, sizeof(meter_hw_registers_t) );
-        }
-
-        close(fifoFile);
 #endif
 }
 
