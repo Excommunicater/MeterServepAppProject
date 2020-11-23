@@ -1,14 +1,17 @@
+//--External includes-------------------------------------------------
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h> 
+//--------------------------------------------------------------------
+
 //--Local includes----------------------------------------------------
 #include "notificationUtils.h"
 #include "dataUtils.h" // GetInstatntenousPhaseVoltage()
 #include "errorHandling.h"
 #include "../commonIncludes/metering_interface.h" // PHASE_CNT
 //--------------------------------------------------------------------
-#include <stdbool.h>
-#include <stdio.h>  // printf()
-#include <stdlib.h> // malloc()
-#include <time.h>   // time()
-#include <string.h> // memcpy()
 
 //--Defines-----------------------------------------------------------
 //#define NU_DBG_PRNT
@@ -51,9 +54,6 @@ subscriptionRecord_t * FindLastElement( void );
 bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
 bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription );
 uint32_t GetUniqueNotificationMessageId( void );
-#ifdef NU_DBG_PRNT
-    void PrintRecordList( void );
-#endif
 //--------------------------------------------------------------------
 
 shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdType_t typeToSet, uint32_t valueToSet )
@@ -114,10 +114,6 @@ shortConfirmationValues_t ResetVoltageThresehold( uint8_t phase, theseholdType_t
 
 subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
-    printf("RegisterSubscription\r\n");
-    #ifdef NU_DBG_PRNT
-        PrintRecordList();
-    #endif
     subscriptionRegistrationStatus_t retVal = SUBSCRIPTION_LIST_FULL;
     if ( actualNumberOfSubscriptions < MAXIMUM_SUBSCRIPTION_NUMBER )
     {
@@ -143,10 +139,6 @@ subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdT
 
 void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
-    #ifdef NU_DBG_PRNT
-        printf("AddNewSubscription\r\n");
-    #endif
-
     uint8_t newId = GetNewUniqueNotificationId();
 
     // Create a new record
@@ -175,10 +167,6 @@ void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notifica
     pNewRecord->type                = type;
     pNewRecord->pNext               = (subscriptionRecord_t*)NULL;
     *notificationId = newId;
-    #ifdef NU_DBG_PRNT
-        printf("Created new subscription!");
-        printf("NI:%i; NQ=%i; P=%i; T=%i; TS=%i\r\n", pNewRecord->notificationId, pNewRecord->notificationQueue, pNewRecord->phase, pNewRecord->type, actualNumberOfSubscriptions );
-    #endif
 }
 
 uint8_t GetNewUniqueNotificationId( void )
@@ -233,10 +221,6 @@ bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t 
 
 shortConfirmationValues_t Unsubscribe( uint8_t notificationId )
 {
-    #ifdef NU_DBG_PRNT
-        printf("Unsubscribe - ID=%i\r\n", notificationId);
-        void PrintRecordList();
-    #endif
     shortConfirmationValues_t retVal = BAD_INSTANCE;
     subscriptionRecord_t * pPrev = (subscriptionRecord_t*)NULL;
     subscriptionRecord_t * pRemove = pSubscriptionListHead;
@@ -247,10 +231,6 @@ shortConfirmationValues_t Unsubscribe( uint8_t notificationId )
         pSubscriptionListHead = pRemove->pNext;
         free( pRemove );
         retVal = OK;
-        #ifdef NU_DBG_PRNT
-            printf("Find element (first) and removed\r\n");
-            void PrintRecordList( void );
-        #endif
         actualNumberOfSubscriptions--;
         return retVal;
     }
@@ -262,10 +242,6 @@ shortConfirmationValues_t Unsubscribe( uint8_t notificationId )
             pPrev->pNext = pRemove->pNext;
             free( pRemove );
             retVal = OK;
-            #ifdef NU_DBG_PRNT
-                printf("Find element and removed\r\n");
-                void PrintRecordList( void );
-            #endif
             actualNumberOfSubscriptions--;
             return retVal;
         }
@@ -275,9 +251,6 @@ shortConfirmationValues_t Unsubscribe( uint8_t notificationId )
             pRemove = pRemove->pNext;
         }
     }
-    #ifdef NU_DBG_PRNT
-        printf("Element not found!\r\n");
-    #endif
     return retVal;
 }
 
@@ -419,19 +392,3 @@ void UnsubscribeAfterNotification( uint32_t notificationMessageId )
     }
 }
 
-#ifdef NU_DBG_PRNT
-    void PrintRecordList( void )
-    {
-        subscriptionRecord_t * pTemp = pSubscriptionListHead;
-        uint8_t i = 0U;
-        printf("PrintRecordList - Number of records %i\r\n", actualNumberOfSubscriptions);
-        while ( pTemp != (subscriptionRecord_t*)NULL )
-        {
-            printf("Record No.:%i ", i);
-            printf("IsActive=%i; phase=%i; type=%i; notificationId=%i; notificationQueue=%i; pNext=%i\r\n", (uint8_t)pTemp->isActive, pTemp->phase, pTemp->type, pTemp->notificationId, pTemp->notificationQueue, pTemp->pNext);
-            pTemp = pTemp->pNext;
-            i++;
-        }
-        printf("\r\n\n");
-    }
-#endif

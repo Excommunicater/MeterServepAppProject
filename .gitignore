@@ -78,3 +78,4 @@ out/build/ServerStart
 .vscode/tasks.json
 .vscode/c_cpp_properties.json
 workspace.code-workspace
+Data.bin

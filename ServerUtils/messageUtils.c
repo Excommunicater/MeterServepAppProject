@@ -1,6 +1,8 @@
+//--Project includes--------------------------------------------------
 #include "messageUtils.h"
 #include "queueUtils.h"
-#include "../commonIncludes/serverMessages.h"     //
+#include "../commonIncludes/serverMessages.h"
+//--------------------------------------------------------------------
 
 //--Local Structures--------------------------------------------------
 typedef struct messageTypeSize
@@ -21,6 +23,8 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
     { UINT64_RESPONSE,              sizeof(responseUint64_t)},
     { SUBSCRIPTION_RESPONSE,        sizeof(responseSubscriptionBody_t)}
 };
+//--------------------------------------------------------------------
+
 
 size_t GetMessageSize( long type )
 {

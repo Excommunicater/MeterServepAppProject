@@ -1,8 +1,8 @@
 #ifndef DATA_UTILS_H
 #define DATA_UTILS_H
 
-#include <stdint.h>  // uint32_t
-#include "../commonIncludes/serverMessages.h" // shortConfirmationValues_t
+#include <stdint.h>
+#include "../commonIncludes/serverMessages.h"
 
 typedef enum angleValue
 {

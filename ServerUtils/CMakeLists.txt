@@ -9,5 +9,7 @@ add_library(${thisLibrary}
     notificationUtils.c
     queueUtils.c
     serverUtils.c
+    fileUtils.c
+    messageHandlers.c
 )
 

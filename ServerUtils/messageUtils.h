@@ -1,11 +1,11 @@
 #ifndef MESSAGE_UTILS_H
 #define MESSAGE_UTILS_H
 
-#include <stddef.h>  // size_t
-#include <stdbool.h> // bool
-#include <stdint.h>  // uint32_t
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "../commonIncludes/serverMessages.h" // shortConfirmationValues_t
+#include "../commonIncludes/serverMessages.h"
 
 size_t GetMessageSize( long type );
 bool ResponseUint32( uint32_t valueToResponse, shortConfirmationValues_t status, long responseQueue, uint32_t requestId );

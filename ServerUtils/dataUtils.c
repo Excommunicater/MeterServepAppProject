@@ -1,17 +1,25 @@
+//--External includes-------------------------------------------------
+#include <stddef.h>
+#include <stdio.h> 
+#include <string.h> 
+#include <fcntl.h> 
+#include <sys/stat.h> 
+#include <sys/types.h> 
+#include <unistd.h> 
+#include <poll.h>
+//--------------------------------------------------------------------
+
+//--Project includes--------------------------------------------------
 #include "dataUtils.h"
+#include "fileUtils.h"
 #include "errorHandling.h"
-#include "../commonIncludes/serverMessages.h"     // OK, BAD_INSTANCE
-#include "../commonIncludes/metering_interface.h" // PHASE_CNT
+#include "../commonIncludes/serverMessages.h"
+#include "../commonIncludes/metering_interface.h"
+//--------------------------------------------------------------------
 
-#include <sys/stat.h> // mkfifo()
-#include <stdio.h>    // printf()
-#include <stddef.h>   // NULL - XD
-#include <fcntl.h>    // open(), read()
-#include <poll.h>     // poll()
-
-
-#define DU_DBG_PRNT
-//#define DEBUGING_READ_DEFINED_VALUES 
+//--Defines-----------------------------------------------------------
+//#define DEBUGING_READ_DEFINED_VALUES  //< Uncomment for do not use meter server; Help with debugging!
+//--------------------------------------------------------------------
 
 //--Local Structures--------------------------------------------------
 typedef struct maxMinPerPhaseVoltageAndCurrent
@@ -25,12 +33,19 @@ typedef struct maxMinPerPhaseVoltageAndCurrent
 
 //--File Scope Global Variables---------------------------------------
 static meter_hw_registers_t lastReadHardwareRegister = {0};
+static meter_hw_registers_t storedLastPowerCycleHardwareRegister = {0};
 static maxMinPerPhaseVoltageAndCurrent_t maxMinVI[PHASE_CNT] = {0};
 //--------------------------------------------------------------------
+
+
 void InitMeter( void )
 {
     mkfifo(DEV_FILE, 0666);
+
+    // Restore stored values saved before power cycle  
+    RestoreNonVolatileData( &storedLastPowerCycleHardwareRegister, sizeof(meter_hw_registers_t) );
 }
+
 
 uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8_t phase )
 {
@@ -76,7 +91,6 @@ uint32_t GetInstatntenousPhaseCurrent( shortConfirmationValues_t * status, uint8
 
 uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet )
 {
-    uint32_t response = 0U;
     if ( status == (shortConfirmationValues_t*)NULL )
     {
         ReportAndExit("GetPhaseAngle - passed NULL argument!");
@@ -85,6 +99,8 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
     {
         ReportAndExit("GetPhaseAngle - passed bad value to get!");
     }
+
+    uint32_t response = 0U;
 
     if ( phase < PHASE_CNT )
     {
@@ -105,9 +121,10 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
     return response;
 }
 
-#ifndef DEBUGING_READ_DEFINED_VALUES
+
     void ReadStructFromDev( void )
     {
+#ifndef DEBUGING_READ_DEFINED_VALUES
         struct pollfd fdarray [1];
         int fifoFile = open(DEV_FILE, O_RDONLY);
         fdarray[0].fd = fifoFile;
@@ -118,16 +135,8 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
         if ( ( rc == 1 ) && ( fdarray[0].revents == POLLIN ) )
         {
             read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
-        }
-        close(fifoFile);
-        #ifdef DU_DBG_PRNT
-            //printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", lastReadHardwareRegister.per_phase[2].v, lastReadHardwareRegister.per_phase[2].i, lastReadHardwareRegister.per_phase[2].ai,  lastReadHardwareRegister.per_phase[2].ae);
-        #endif
-    }
 #endif
 #ifdef DEBUGING_READ_DEFINED_VALUES
-    void ReadStructFromDev( void )
-    {
         lastReadHardwareRegister.per_phase[0].v    = 102U;
         lastReadHardwareRegister.per_phase[0].i    = 102U;
         lastReadHardwareRegister.per_phase[0].ai   = 102U;
@@ -140,15 +149,29 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
         lastReadHardwareRegister.per_phase[2].i    = 102U;
         lastReadHardwareRegister.per_phase[2].ai   = 102U;
         lastReadHardwareRegister.per_phase[2].ae   = 102U;
-
         lastReadHardwareRegister.voltage_angles[0] = 102U;
         lastReadHardwareRegister.voltage_angles[1] = 102U;
         lastReadHardwareRegister.voltage_angles[2] = 102U;
         lastReadHardwareRegister.current_angles[0] = 102U;
         lastReadHardwareRegister.current_angles[1] = 102U;
         lastReadHardwareRegister.current_angles[2] = 102U;
-    }
 #endif
+            // Add to last read values data from previous powercycle
+            lastReadHardwareRegister.per_phase[0].ai += storedLastPowerCycleHardwareRegister.per_phase[0].ai; 
+            lastReadHardwareRegister.per_phase[1].ai += storedLastPowerCycleHardwareRegister.per_phase[1].ai; 
+            lastReadHardwareRegister.per_phase[2].ai += storedLastPowerCycleHardwareRegister.per_phase[2].ai;
+            lastReadHardwareRegister.per_phase[0].ae += storedLastPowerCycleHardwareRegister.per_phase[0].ae;
+            lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+            lastReadHardwareRegister.per_phase[1].ae += storedLastPowerCycleHardwareRegister.per_phase[1].ae;
+            //-----------------------------------------------------------------------
+#ifndef DEBUGING_READ_DEFINED_VALUES
+            StoreNonVolatileData( &lastReadHardwareRegister, sizeof(meter_hw_registers_t) );
+        }
+
+        close(fifoFile);
+#endif
+}
+
 
 void StoreMaxMinValues( void )
 {
@@ -157,29 +180,17 @@ void StoreMaxMinValues( void )
         if ( maxMinVI[i].maxCurrent < lastReadHardwareRegister.per_phase[i].i )
         {
             maxMinVI[i].maxCurrent = lastReadHardwareRegister.per_phase[i].i;
-            #ifdef DU_DBG_PRNT
-                printf("StoreMaxMinValues - Stored new max current[%i] = %i\r\n", i, maxMinVI[i].maxCurrent);
-            #endif
         }
         if ( maxMinVI[i].maxVoltage < lastReadHardwareRegister.per_phase[i].v )
         {
             maxMinVI[i].maxVoltage = lastReadHardwareRegister.per_phase[i].v;
-            #ifdef DU_DBG_PRNT
-                printf("StoreMaxMinValues - Stored new max voltage[%i] = %i\r\n", i, maxMinVI[i].maxVoltage);
-            #endif
         }
         if ( maxMinVI[i].minCurrent > lastReadHardwareRegister.per_phase[i].i )
         {
-            #ifdef DU_DBG_PRNT
-                printf("StoreMaxMinValues - Stored new min current[%i] = %i\r\n", i, maxMinVI[i].minCurrent);
-            #endif
             maxMinVI[i].minCurrent = lastReadHardwareRegister.per_phase[i].i;
         }
         if ( maxMinVI[i].minVoltage > lastReadHardwareRegister.per_phase[i].v )
         {
-            #ifdef DU_DBG_PRNT
-                printf("StoreMaxMinValues - Stored new min voltage[%i] = %i\r\n", i, maxMinVI[i].minVoltage);
-            #endif
             maxMinVI[i].minVoltage = lastReadHardwareRegister.per_phase[i].v;
         }
     }
