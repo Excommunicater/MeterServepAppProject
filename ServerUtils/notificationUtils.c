@@ -385,6 +385,38 @@ uint32_t GetUniqueNotificationMessageId( void )
     return id;
 }
 
+void UnblockSubscriptionAfterNotification( uint32_t notificationMessageId )
+{
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
+        {
+            pTemp->isActive = true;
+            return;
+        }
+        pTemp = pTemp->pNext;
+    }
+}
+
+void UnsubscribeAfterNotification( uint32_t notificationMessageId )
+{
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
+        {
+            if ( Unsubscribe( pTemp->notificationId ) != OK )
+            {
+                ReportAndExit("UnsubscribeAfterNotification - Problem with removing subscription...");
+            }
+            return;
+        }
+        pTemp = pTemp->pNext;
+    }
+}
 
 #ifdef NU_DBG_PRNT
     void PrintRecordList( void )

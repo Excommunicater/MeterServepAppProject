@@ -8,13 +8,6 @@ int main()
     int appQueueId    = TestUtilGetAndPrepareTestQueue( THIS_TEST_PATH );
     uint32_t requestId = 1U;
 
-    uint32_t numberOfMessagesInQueue = GetNumberOfMessagesInQueue(appQueueId);
-
-    printf("QUEUE = %i\r\n", numberOfMessagesInQueue);
-
-    //int messageId =  LookForMessageInQueue( appQueueId);
-    //printf("messagetype = %i\r\n", messageId);
-
     wholeTestResponse_t wholeTestResponse = {0};
     testResponses_t testResponse = TEST_OK;
 
@@ -107,13 +100,15 @@ int main()
         appQueueId,
         &timeStamp
     );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 7 - Notification was sent! - Hopefully :D
     // After sending the notification, subscription should be blocked.
     // Check number of subscription (should be 1) and active subscription (should be 0)
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
-        NUMBER_OF_SUBSCRIPTION,         //< Check attribute METER_SERVER_VERSION
+        NUMBER_OF_SUBSCRIPTION,         //< 
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
         true,                           //< Validate Response
@@ -127,7 +122,63 @@ int main()
     // Test 8
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
-        NUMBER_OF_ACTIVE_SUBSCRIPTION,  //< Check attribute METER_SERVER_VERSION
+        NUMBER_OF_ACTIVE_SUBSCRIPTION,  //< 
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        true,                           //< Validate Response
+        0U,                             //< Expected Response
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 9 - Respond OK to notification
+    testResponse = TestResponseToNotification( 
+        notificationRequestId,
+        serverQueueId,
+        OK
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 10 - check is next notification is sent
+    testResponse = TestGetNotification( 
+        uniqueSubscriptionId,
+        &notificationRequestId,
+        appQueueId,
+        &timeStamp
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 11 - Respond to notification with ERROR code
+    testResponse = TestResponseToNotification( 
+        notificationRequestId,
+        serverQueueId,
+        ERROR
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 12 - check is subscription is deleted
+    testResponse = TestSingleRequestWithUint32Response(
+        0,                              //< Instance is not important
+        NUMBER_OF_SUBSCRIPTION,         //< 
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        true,                           //< Validate Response
+        0,   //< Expected Response
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 13 - check is subscription is deleted
+    testResponse = TestSingleRequestWithUint32Response(
+        0,                              //< Instance is not important
+        NUMBER_OF_ACTIVE_SUBSCRIPTION,  //< 
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
         true,                           //< Validate Response
@@ -139,7 +190,7 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
 
 
-    // Test 9 - Try to remove all subscriptions
+    // Test 14 - Try to remove all subscriptions
     testResponse = TestResetRequestWithShortConfirmationResponse(
         1U,                             //< instance - not important
         UNSUBSCRIBE_ALL,                //< Remove all subscription
@@ -152,7 +203,7 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
     expectedNumberOfSubscription = 0U;
 
-    // Test 10 - check number of subscription after removing all
+    // Test 15 - check number of subscription after removing all
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
         NUMBER_OF_SUBSCRIPTION,         //< Check attribute NUMBER_OF_SUBSCRIPTION

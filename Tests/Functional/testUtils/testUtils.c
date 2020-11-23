@@ -305,6 +305,29 @@ testResponses_t TestGetNotification(
     return TEST_OK;    
 }
 
+testResponses_t TestResponseToNotification( 
+    uint32_t responseId,
+    int queue,
+    shortConfirmationValues_t valueToResponse )
+{
+    responseShortConfirmation_t response;
+    responseShortConfirmationBody_t * responseBody = (responseShortConfirmationBody_t*)response.mtext;
+    response.mtype = SHORT_CONFIRMATION_RESPONSE;
+    responseBody->confirmationValue = valueToResponse;
+    responseBody->requestId = responseId;
+    // Try to push Request to server
+    bool operationStatus = PushMessageToQueue( (void*)&response, SHORT_CONFIRMATION_RESPONSE, queue );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+
+    return OK;
+}
+
 void ParseTestResponse( testResponses_t singleTestResponse, wholeTestResponse_t * pWholeTestResponse )
 {
     pWholeTestResponse->numberOfTests++;

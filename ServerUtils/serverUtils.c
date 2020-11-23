@@ -75,6 +75,7 @@ void HandleIncomingMessages( void )
         HandleSingleSetRequest();
         HandleResetRequest();
         HandleSubscriptionRequest();
+        HandleNotificationResponse();
     }
 }
 
@@ -405,6 +406,25 @@ void HandleSubscriptionRequest( void )
             #ifdef SU_DBG_PRNT
                 printf("ERROR DURING RESPONDING!\r\n");
             #endif
+        }
+    }
+}
+
+void HandleNotificationResponse( void )
+{
+    responseShortConfirmation_t response;
+    if ( GetMessageFromServerQueue( (void *)&response, SHORT_CONFIRMATION_RESPONSE ) )
+    {
+        responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)response.mtext;
+        notification_t notification;
+
+        if ( pResponseBody->confirmationValue == OK )
+        {
+            UnblockSubscriptionAfterNotification( pResponseBody->requestId );
+        }
+        else
+        {
+            UnsubscribeAfterNotification( pResponseBody->requestId ); 
         }
     }
 }

@@ -32,4 +32,6 @@ shortConfirmationValues_t UnsubscribeAll( void );
 uint32_t GetNumberOfSubscriptions( void );
 uint32_t GetNumberOfActiveSubscriptions( void );
 bool PopNotification( notification_t * notification );
+void UnblockSubscriptionAfterNotification( uint32_t notificationMessageId );
+void UnsubscribeAfterNotification( uint32_t notificationMessageId );
 #endif // NOTIFICATION_UTILS_H

@@ -75,6 +75,10 @@ testResponses_t TestGetNotification(
         uint32_t * timeStamp
     #endif
     );
+testResponses_t TestResponseToNotification( 
+    uint32_t responseId,
+    int queue,
+    shortConfirmationValues_t valueToResponse );
 
 void PrintTestResults( wholeTestResponse_t result, const char * testPath );
 void PrintTestResponse( testResponses_t response );
