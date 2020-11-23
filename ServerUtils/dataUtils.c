@@ -7,10 +7,11 @@
 #include <stdio.h>    // printf()
 #include <stddef.h>   // NULL - XD
 #include <fcntl.h>    // open(), read()
+#include <poll.h>     // poll()
 
 
 #define DU_DBG_PRNT
-#define DEBUGING_READ_DEFINED_VALUES 
+//#define DEBUGING_READ_DEFINED_VALUES 
 
 //--Local Structures--------------------------------------------------
 typedef struct maxMinPerPhaseVoltageAndCurrent
@@ -107,11 +108,20 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
 #ifndef DEBUGING_READ_DEFINED_VALUES
     void ReadStructFromDev( void )
     {
+        struct pollfd fdarray [1];
         int fifoFile = open(DEV_FILE, O_RDONLY);
-        read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t)); 
+        fdarray[0].fd = fifoFile;
+        fdarray[0].events = POLLIN;
+
+        int rc = poll(fdarray, 1, 1);
+
+        if ( ( rc == 1 ) && ( fdarray[0].revents == POLLIN ) )
+        {
+            read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
+        }
         close(fifoFile);
         #ifdef DU_DBG_PRNT
-            printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", lastReadHardwareRegister.per_phase[2].v, lastReadHardwareRegister.per_phase[2].i, lastReadHardwareRegister.per_phase[2].ai,  lastReadHardwareRegister.per_phase[2].ae);
+            //printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", lastReadHardwareRegister.per_phase[2].v, lastReadHardwareRegister.per_phase[2].i, lastReadHardwareRegister.per_phase[2].ai,  lastReadHardwareRegister.per_phase[2].ae);
         #endif
     }
 #endif
