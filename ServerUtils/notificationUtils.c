@@ -8,6 +8,7 @@
 #include <stdio.h>  // printf()
 #include <stdlib.h> // malloc()
 #include <time.h>   // time()
+#include <string.h> // memcpy()
 
 //--Defines-----------------------------------------------------------
 //#define NU_DBG_PRNT

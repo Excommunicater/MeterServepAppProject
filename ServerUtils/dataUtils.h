@@ -16,6 +16,7 @@ typedef enum angleMinMax
     ANGLE_MAX
 } angleMinMax_t;
 
+void InitMeter( void );
 void ReadStructFromDev( void );
 void StoreMaxMinValues( void );
 uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8_t phase );

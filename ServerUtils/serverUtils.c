@@ -1,6 +1,5 @@
 //--External includes-------------------------------------------------
 #include <stdio.h>              // pritnf()
-#include <sys/stat.h>           // mkfifo()
 #include <unistd.h>             // usleep()
 #include <stdint.h>             // uint32_t
 #include <stdbool.h>            // bool
@@ -40,6 +39,7 @@ void HandleSingleSetRequest( void );
 void HandleResetRequest( void );
 void HandleSubscriptionRequest( void );
 void HandleSendingNotifications( void );
+void HandleNotificationResponse( void );
 //--------------------------------------------------------------------
 
 void StartServer( void )
@@ -56,16 +56,12 @@ void StartServer( void )
 
 void InitServer( void )
 {
-    InitFifo();
+    InitMeter();
     InitServerMessageQueue();
     (void)GetServerQueueId(&serverReceiveQueueId);
     CleanSrvQueue();
 }
 
-void InitFifo( void )
-{
-    mkfifo(DEV_FILE, 0666);
-}
 
 void HandleIncomingMessages( void )
 {
@@ -420,10 +416,16 @@ void HandleNotificationResponse( void )
 
         if ( pResponseBody->confirmationValue == OK )
         {
+            #ifdef SU_DBG_PRNT
+                printf("HandleNotificationResponse: Unblock subscription!\r\n");
+            #endif
             UnblockSubscriptionAfterNotification( pResponseBody->requestId );
         }
         else
         {
+            #ifdef SU_DBG_PRNT
+                printf("HandleNotificationResponse: Unsubscribe!\r\n");
+            #endif
             UnsubscribeAfterNotification( pResponseBody->requestId ); 
         }
     }

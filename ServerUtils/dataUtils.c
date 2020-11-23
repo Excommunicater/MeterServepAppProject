@@ -3,9 +3,10 @@
 #include "../commonIncludes/serverMessages.h"     // OK, BAD_INSTANCE
 #include "../commonIncludes/metering_interface.h" // PHASE_CNT
 
-#include <stdio.h>  // printf()
-#include <stddef.h> // NULL - XD
-#include <fcntl.h>  // open(), read()
+#include <sys/stat.h> // mkfifo()
+#include <stdio.h>    // printf()
+#include <stddef.h>   // NULL - XD
+#include <fcntl.h>    // open(), read()
 
 
 #define DU_DBG_PRNT
@@ -25,6 +26,10 @@ typedef struct maxMinPerPhaseVoltageAndCurrent
 static meter_hw_registers_t lastReadHardwareRegister = {0};
 static maxMinPerPhaseVoltageAndCurrent_t maxMinVI[PHASE_CNT] = {0};
 //--------------------------------------------------------------------
+void InitMeter( void )
+{
+    mkfifo(DEV_FILE, 0666);
+}
 
 uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8_t phase )
 {
