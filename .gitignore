@@ -74,3 +74,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 out/build/ServerStart
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/c_cpp_properties.json
+workspace.code-workspace

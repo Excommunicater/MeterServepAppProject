@@ -1,7 +1,7 @@
 #include "../testUtils/testUtils.h"
 #include "../../../commonIncludes/projectGenerals.h"
 
-#define THIS_TEST_PATH "./Tests/Functional/simpleGet/simpleGetTest.c"
+#define THIS_TEST_PATH "./Tests/Functional/getSingle/getSingleTest.c"
 
 int main()
 {
@@ -267,7 +267,7 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
 
     // Test 19 - Request Not supported attribute
-    TestSingleRequestShortConfirmationResponse(
+    testResponse = TestGetSingleRequestShortConfirmationResponse(
         1U,                             //< Good instance number
         97U,                            //< Get not existing attribute
         appQueueId,                     //< Pass test response queue ID

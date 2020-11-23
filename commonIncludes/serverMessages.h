@@ -3,19 +3,33 @@
 
 #include <stdint.h>
 
-#define NUMBER_OF_REQUEST_TYPES  4
-#define NUMBER_OF_RESPONSE_TYPES 3
+#include "projectGenerals.h"
+
+#define NUMBER_OF_REQUEST_TYPES  5
+#define NUMBER_OF_RESPONSE_TYPES 4
 
 #define NUMBER_OF_MESSAGE_TYPES NUMBER_OF_REQUEST_TYPES + NUMBER_OF_RESPONSE_TYPES
 
-//--Request Data Types and Structures----------------------------------
 typedef enum messageTypeRequest
 {
-    SINGLE_GET_REQUEST = 1U,
+    GET_SINGLE_REQUEST = 1U,
     RESET_REQUEST,
-    SET_EVENT_REQUEST,
-    RESET_EVENT_REQUEST
+    SET_SINGLE_REQUEST,
+    SUBSCRIBE_REQUEST,
+    NOTIFICATION,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_REQUEST_TYPE 
 } messageTypeRequest_t;
+
+typedef enum messageTypeResponse
+{
+    SHORT_CONFIRMATION_RESPONSE = LAST_REQUEST_TYPE,
+    UINT32_RESPONSE,
+    UINT64_RESPONSE,
+    SUBSCRIPTION_RESPONSE,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_RESPONSE_TYPE 
+} messageTypeResponse_t;
 
 typedef enum attributesToGet
 {
@@ -28,12 +42,62 @@ typedef enum attributesToGet
     MINIMUM_PHASE_VOLTAGE,
     MAXIMUM_PHASE_VOLTAGE,
     MINIMUM_PHASE_CURRENT,
-    MAXIMUM_PHASE_CURRENT
+    MAXIMUM_PHASE_CURRENT,
+    NUMBER_OF_SUBSCRIPTION,
+    NUMBER_OF_ACTIVE_SUBSCRIPTION,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_GET  
 } attributesToGet_t;
 
+typedef enum attributesToSet
+{
+    UNDER_VOLTAGE_THRESEHOLD = LAST_ATTRIBUTE_NUMBER_TO_GET,
+    OVER_VOLTAGE_THRESEHOLD,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_SET
+} attributesToSet_t;
+
+typedef enum attributesToReset
+{
+    RESET_MINIMUM_PHASE_VOLTAGE = LAST_ATTRIBUTE_NUMBER_TO_SET,
+    RESET_MAXIMUM_PHASE_VOLTAGE,
+    RESET_MINIMUM_PHASE_CURRENT,
+    RESET_MAXIMUM_PHASE_CURRENT,
+    RESET_UNDER_VOLTAGE_THRESEHOLD,
+    RESET_OVER_VOLTAGE_THRESEHOLD,
+    UNSUBSCRIBE,
+    UNSUBSCRIBE_ALL,
+    // Next value have to be the last one and is invalid to use. Add new ones before it!
+    LAST_ATTRIBUTE_NUMBER_TO_RESET
+} attributesToReset_t;
+
+typedef enum subscription
+{
+    UNDER_VOLTAGE_SUBSCRIPTION = 0U,
+    OVER_VOLTAGE_SUBSCRIPTION
+} subscription_t;
+
+typedef enum subscriptionRegistrationStatus
+{
+    SUBSCRIPTION_REGISTERED = 0U,
+    SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST,
+    SUBSCRIPTION_LIST_FULL,
+    SUBSCRIPTION_ALREADY_EXIST
+} subscriptionRegistrationStatus_t;
+
+typedef enum shortConfirmationValues
+{
+    OK = 0U,
+    ERROR,
+    BAD_INSTANCE,
+    BAD_ATTRIBUTE
+} shortConfirmationValues_t;
+//--------------------------------------------------------------------
+
+//--Request Data Types -----------------------------------------------
 typedef struct requestSingleGetBody
 {
-    uint32_t requestId;          //< Id of partiqular request
+    uint32_t requestId;          //< Id of particular request
     int queueResponseId;         //< To this queue ID response shall be sent
     uint8_t instance;            //< Phaze number - if attribute not phaze related - just ignore it!
     attributesToGet_t attribute; //< Attribute number to get
@@ -45,14 +109,13 @@ typedef struct requestSingleGet
     char mtext[sizeof(requestSingleGetBody_t)];
 } requestSingleGet_t;
 
-// @note: Attributes to reset: 
-// MINIMUM_PHASE_VOLTAGE | MAXIMUM_PHASE_VOLTAGE | MINIMUM_PHASE_CURRENT | MAXIMUM_PHASE_CURRENT
 typedef struct requestResetBody
 {
-    uint32_t requestId;          //< Id of partiqular request
-    int queueResponseId;         //< To this queue ID response shall be sent
-    uint8_t instance;            //< Phaze number
-    attributesToGet_t attribute; //< Attribute to reset
+    uint32_t requestId;            //< Id of particular request
+    int queueResponseId;           //< To this queue ID response shall be sent
+    uint8_t instance;              //< Phaze number or notificationId
+    attributesToReset_t attribute; //< Attribute to reset
+    uint8_t additionalData;
 } requestResetBody_t;
 
 typedef struct requestReset
@@ -61,24 +124,56 @@ typedef struct requestReset
     char mtext[sizeof(requestResetBody_t)];
 } requestReset_t;
 
+typedef struct requestSingleSetBody
+{
+    uint32_t requestId;          //< Id of particular request
+    int queueResponseId;         //< To this queue ID response shall be sent
+    uint8_t instance;            //< Phaze number
+    attributesToSet_t attribute; //< Attribute number to set
+    uint32_t valueToSet;         //< Value to set
+} requestSingleSetBody_t;
+
+typedef struct requestSingleSet
+{
+    long mtype;
+    char mtext[sizeof(requestSingleSetBody_t)];
+} requestSingleSet_t;
+
+typedef struct requestSubscriptionBody
+{
+    uint32_t requestId;       //< Id of particular request
+    int queueResponseId;      //< To this queue ID response shall be sent
+    uint8_t instance;         //< Phaze number
+    subscription_t attribute; //< Subscription type
+} requestSubscriptionBody_t;
+
+typedef struct requestSubscription
+{
+    long mtype;
+    char mtext[sizeof(requestSubscriptionBody_t)];
+} requestSubscription_t;
+
+typedef struct notificationBody
+{
+    uint32_t requestId; 
+    uint8_t notificationId;
+    #if SERVER_64_BIT == true
+        uint64_t timeStamp;
+    #elif
+        uint32_t timeStamp;
+    #endif
+
+} notificationMessageBody_t;
+
+typedef struct notificationMessage
+{
+    long mtype;
+    char mtext[sizeof(notificationMessageBody_t)];
+} notificationMessage_t;
+
 //--------------------------------------------------------------------
 
-//--Response Data Types and Structures--------------------------------
-typedef enum messageTypeResponse
-{
-    SHORT_CONFIRMATION_RESPONSE = NUMBER_OF_REQUEST_TYPES + 1,
-    UINT32_RESPONSE,
-    UINT64_RESPONSE
-} messageTypeResponse_t;
-
-typedef enum shortConfirmationValues
-{
-    OK = 0U,
-    ERROR,
-    BAD_INSTANCE,
-    BAD_ATTRIBUTE
-} shortConfirmationValues_t;
-
+//--Response Data Types ----------------------------------------------
 typedef struct responseShortConfirmationBody
 {
     uint32_t requestId; 
@@ -111,6 +206,20 @@ typedef struct responseUint64
     uint64_t value;
     shortConfirmationValues_t status;
 } responseUint64_t;
+
+typedef struct responseSubscriptionBody
+{
+    uint32_t requestId; 
+    subscriptionRegistrationStatus_t confirmationValue;
+    uint8_t notificationId;
+} responseSubscriptionBody_t;
+
+typedef struct responseSubscription
+{
+    long mtype;
+    char mtext[sizeof(responseSubscriptionBody_t)];
+} responseSubscription_t;
+
 //--------------------------------------------------------------------
 
 #endif // SERVER_MESSAGES_H

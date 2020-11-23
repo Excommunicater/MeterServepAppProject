@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-set(thisProject ServerStart)
+set(thisProject setSingle)
 
 add_executable(${thisProject} 
-    serverStart.c
+    setSingleTest.c
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
 
 target_link_libraries(${thisProject} 
-    serverUtils
+    testUtils
 )
-
-

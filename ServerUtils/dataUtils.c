@@ -9,6 +9,7 @@
 
 
 #define DU_DBG_PRNT
+#define DEBUGING_READ_DEFINED_VALUES 
 
 //--Local Structures--------------------------------------------------
 typedef struct maxMinPerPhaseVoltageAndCurrent
@@ -34,7 +35,7 @@ uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8
         ReportAndExit("GetInstatntenousPhaseVoltage - passed NULL argument!");
     }
 
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         response = lastReadHardwareRegister.per_phase[phase].v;
         *status  = OK;
@@ -55,7 +56,7 @@ uint32_t GetInstatntenousPhaseCurrent( shortConfirmationValues_t * status, uint8
         ReportAndExit("GetInstatntenousPhaseCurrent - passed NULL argument!");
     }
 
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         response = lastReadHardwareRegister.per_phase[phase].i;
         *status  = OK;
@@ -79,7 +80,7 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
         ReportAndExit("GetPhaseAngle - passed bad value to get!");
     }
 
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         if ( valueToGet == ANGLE_VOLTAGE )
         {
@@ -98,15 +99,41 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
     return response;
 }
 
-void ReadStructFromDev( void )
-{
-    int fifoFile = open(DEV_FILE, O_RDONLY);
-    read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t)); 
-    close(fifoFile);
-    #ifdef DU_DBG_PRNT
-        //printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", lastReadHardwareRegister.per_phase[2].v, lastReadHardwareRegister.per_phase[2].i, lastReadHardwareRegister.per_phase[2].ai,  lastReadHardwareRegister.per_phase[2].ae);
-    #endif
-}
+#ifndef DEBUGING_READ_DEFINED_VALUES
+    void ReadStructFromDev( void )
+    {
+        int fifoFile = open(DEV_FILE, O_RDONLY);
+        read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t)); 
+        close(fifoFile);
+        #ifdef DU_DBG_PRNT
+            printf("V[2] = %i A[2] = %i A+[2] = %li A-[2] = %li\r\n", lastReadHardwareRegister.per_phase[2].v, lastReadHardwareRegister.per_phase[2].i, lastReadHardwareRegister.per_phase[2].ai,  lastReadHardwareRegister.per_phase[2].ae);
+        #endif
+    }
+#endif
+#ifdef DEBUGING_READ_DEFINED_VALUES
+    void ReadStructFromDev( void )
+    {
+        lastReadHardwareRegister.per_phase[0].v    = 102U;
+        lastReadHardwareRegister.per_phase[0].i    = 102U;
+        lastReadHardwareRegister.per_phase[0].ai   = 102U;
+        lastReadHardwareRegister.per_phase[0].ae   = 102U;
+        lastReadHardwareRegister.per_phase[1].v    = 102U;
+        lastReadHardwareRegister.per_phase[1].i    = 102U;
+        lastReadHardwareRegister.per_phase[1].ai   = 102U;
+        lastReadHardwareRegister.per_phase[1].ae   = 102U;
+        lastReadHardwareRegister.per_phase[2].v    = 102U;
+        lastReadHardwareRegister.per_phase[2].i    = 102U;
+        lastReadHardwareRegister.per_phase[2].ai   = 102U;
+        lastReadHardwareRegister.per_phase[2].ae   = 102U;
+
+        lastReadHardwareRegister.voltage_angles[0] = 102U;
+        lastReadHardwareRegister.voltage_angles[1] = 102U;
+        lastReadHardwareRegister.voltage_angles[2] = 102U;
+        lastReadHardwareRegister.current_angles[0] = 102U;
+        lastReadHardwareRegister.current_angles[1] = 102U;
+        lastReadHardwareRegister.current_angles[2] = 102U;
+    }
+#endif
 
 void StoreMaxMinValues( void )
 {
@@ -160,7 +187,7 @@ uint32_t GetMinMaxPhaseValue( shortConfirmationValues_t * status, uint8_t phase,
 
     uint32_t response = 0U;
 
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         if ( valueToGet == ANGLE_VOLTAGE )
         {
@@ -206,7 +233,7 @@ shortConfirmationValues_t ResetMinMaxPhaseValue( uint8_t phase, angleValue_t val
 
     shortConfirmationValues_t retVal = ERROR;
 
-    if ( phase <= PHASE_CNT )
+    if ( phase < PHASE_CNT )
     {
         if ( valueToReset == ANGLE_VOLTAGE )
         {

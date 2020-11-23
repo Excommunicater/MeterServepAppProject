@@ -14,6 +14,7 @@
 #include "queueUtils.h"
 #include "dataUtils.h"
 #include "messageUtils.h"
+#include "notificationUtils.h"
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
@@ -32,9 +33,13 @@ static int serverReceiveQueueId = 0;
 
 //--Private Function Declaration--------------------------------------
 void InitFifo( void );
-void HandleIncomeMessages( void );
+void HandleIncomingMessages( void );
+void HandleOutgoingMessages( void );
 void HandleSingleGetRequest( void );
+void HandleSingleSetRequest( void );
 void HandleResetRequest( void );
+void HandleSubscriptionRequest( void );
+void HandleSendingNotifications( void );
 //--------------------------------------------------------------------
 
 void StartServer( void )
@@ -44,8 +49,8 @@ void StartServer( void )
     {
         ReadStructFromDev();
         StoreMaxMinValues();
-        HandleIncomeMessages();
-        //usleep(10000); // each secunde
+        HandleIncomingMessages();
+        HandleOutgoingMessages();
     }
 }
 
@@ -62,12 +67,39 @@ void InitFifo( void )
     mkfifo(DEV_FILE, 0666);
 }
 
-void HandleIncomeMessages( void )
+void HandleIncomingMessages( void )
 {
     while ( GetNumberOfMessagesInQueue(serverReceiveQueueId) )
     {
         HandleSingleGetRequest();
+        HandleSingleSetRequest();
         HandleResetRequest();
+        HandleSubscriptionRequest();
+        HandleNotificationResponse();
+    }
+}
+
+void HandleOutgoingMessages( void )
+{
+    HandleSendingNotifications();
+}
+
+void HandleSendingNotifications( void )
+{
+    notification_t notification;
+    while ( PopNotification( &notification ) )
+    {
+        bool sendStatus = SendNotificationMessage(  notification.notificationID, 
+                                                    notification.queueToSend, 
+                                                    notification.notificationMessageId, 
+                                                    notification.timeStamp );
+        if ( !sendStatus )
+        {
+            // HANDLE IT!
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING SENDING notification!\r\n");
+            #endif
+        }
     }
 }
 
@@ -75,7 +107,7 @@ void HandleIncomeMessages( void )
 void HandleSingleGetRequest( void )
 {
     requestSingleGet_t requestMessage;
-    if ( GetMessageFromServerQueue( (void *)&requestMessage, SINGLE_GET_REQUEST ) )
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, GET_SINGLE_REQUEST ) )
     {
         bool responseStatus = false;
         requestSingleGetBody_t * messageBody = (requestSingleGetBody_t*)requestMessage.mtext;
@@ -159,7 +191,22 @@ void HandleSingleGetRequest( void )
                 #endif
                 responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-        
+
+            case NUMBER_OF_SUBSCRIPTION:
+                returnUint32Value = GetNumberOfSubscriptions();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::NUMBER_OF_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
+                break;
+
+            case NUMBER_OF_ACTIVE_SUBSCRIPTION:
+                returnUint32Value = GetNumberOfActiveSubscriptions();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSingleGetRequest::NUMBER_OF_ACTIVE_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                #endif
+                responseStatus = ResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
+                break;
             default:
                 // Attribute not supported
                 #ifdef SU_DBG_PRNT
@@ -179,45 +226,34 @@ void HandleSingleGetRequest( void )
     }
 }
 
-void HandleResetRequest( void )
+void HandleSingleSetRequest( void )
 {
-    requestReset_t requestMessage;
-    if ( GetMessageFromServerQueue( (void *)&requestMessage, RESET_REQUEST ) )
+    requestSingleSet_t requestMessage;
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, SET_SINGLE_REQUEST ) )
     {
         bool responseStatus = false;
-        requestResetBody_t * messageBody = (requestResetBody_t*)requestMessage.mtext;
-        long responseQueueId = messageBody->queueResponseId;
-        uint32_t requestId = messageBody->requestId;
-        attributesToGet_t attribute = messageBody->attribute;
-        uint8_t instance = messageBody->instance;
-        shortConfirmationValues_t status = ERROR;
+        requestSingleSetBody_t * messageBody = (requestSingleSetBody_t*)requestMessage.mtext;
+        long responseQueueId                 = messageBody->queueResponseId;
+        uint32_t requestId                   = messageBody->requestId;
+        attributesToSet_t attribute          = messageBody->attribute;
+        uint8_t instance                     = messageBody->instance;
+        uint32_t valueToSet                  = messageBody->valueToSet;
+        shortConfirmationValues_t status     = ERROR;
+        
         switch ( attribute )
         {
-            case MINIMUM_PHASE_VOLTAGE:
-                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MIN );
+            case UNDER_VOLTAGE_THRESEHOLD:
+                status = SetVoltageThresehold( instance, UNDERVOLTAGE, valueToSet );
+
                 #ifdef SU_DBG_PRNT
-                    printf("HandleResetRequest::MINIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleSingleSetRequest::UNDER_VOLTAGE_THRESEHOLD rID = %i v = i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
-            case MAXIMUM_PHASE_VOLTAGE:
-                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MAX );
+            case OVER_VOLTAGE_THRESEHOLD:
+                status = SetVoltageThresehold( instance, OVERVOLTAGE, valueToSet );
                 #ifdef SU_DBG_PRNT
-                    printf("HandleResetRequest::MAXIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
-                #endif
-                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
-                break;
-            case MINIMUM_PHASE_CURRENT:
-                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
-                #ifdef SU_DBG_PRNT
-                    printf("HandleResetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
-                #endif
-                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
-                break;
-            case MAXIMUM_PHASE_CURRENT:
-                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
-                #ifdef SU_DBG_PRNT
-                    printf("HandleResetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::OVER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
@@ -229,13 +265,166 @@ void HandleResetRequest( void )
                 responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
                 break;
         }
-
         if ( !responseStatus )
         {
             #ifdef SU_DBG_PRNT
                 printf("ERROR DURING RESPONDING!\r\n");
             #endif
 
+        }
+    }
+}
+
+void HandleResetRequest( void )
+{
+    requestReset_t requestMessage;
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, RESET_REQUEST ) )
+    {
+        bool responseStatus = false;
+        requestResetBody_t * messageBody = (requestResetBody_t*)requestMessage.mtext;
+        long responseQueueId = messageBody->queueResponseId;
+        uint32_t requestId = messageBody->requestId;
+        attributesToReset_t attribute = messageBody->attribute;
+        uint8_t instance = messageBody->instance;
+        shortConfirmationValues_t status = ERROR;
+        switch ( attribute )
+        {
+            case RESET_MINIMUM_PHASE_VOLTAGE:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case RESET_MAXIMUM_PHASE_VOLTAGE:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MAX );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case RESET_MINIMUM_PHASE_CURRENT:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case RESET_MAXIMUM_PHASE_CURRENT:
+                status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case RESET_UNDER_VOLTAGE_THRESEHOLD:
+                status = ResetVoltageThresehold( instance, UNDERVOLTAGE );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_UNDER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case RESET_OVER_VOLTAGE_THRESEHOLD:
+                status = ResetVoltageThresehold( instance, OVERVOLTAGE );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::RESET_OVER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case UNSUBSCRIBE:
+                status = Unsubscribe( instance );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::UNSUBSCRIBE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            case UNSUBSCRIBE_ALL:
+                status = UnsubscribeAll();
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest::UNSUBSCRIBE_ALL rID = %i stat = %i\r\n", requestId, status);
+                #endif
+                responseStatus = ResponseShortConfirmation( status, responseQueueId, requestId );
+                break;
+            default:
+                // Attribute not supported
+                #ifdef SU_DBG_PRNT
+                    printf("HandleResetRequest ATTRIBUTE NOT SUPPORTED!\r\n");
+                #endif
+                responseStatus = ResponseShortConfirmation( BAD_ATTRIBUTE, responseQueueId, requestId );
+                break;
+        }
+        if ( !responseStatus )
+        {
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING RESPONDING!\r\n");
+            #endif
+
+        }
+    }
+}
+
+void HandleSubscriptionRequest( void )
+{
+    requestSubscription_t requestMessage;
+    if ( GetMessageFromServerQueue( (void *)&requestMessage, SUBSCRIBE_REQUEST ) )
+    {
+        bool responseStatus = false;
+        requestSubscriptionBody_t * messageBody = (requestSubscriptionBody_t*)requestMessage.mtext;
+        long responseQueueId = messageBody->queueResponseId;
+        uint32_t requestId = messageBody->requestId;
+        subscription_t attribute = messageBody->attribute;
+        uint8_t instance = messageBody->instance;
+        uint8_t notificationId = 0U;
+
+        subscriptionRegistrationStatus_t status = SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST;
+        switch ( attribute )
+        {
+            case UNDER_VOLTAGE_SUBSCRIPTION:
+                status = RegisterSubscription( instance, UNDERVOLTAGE, &notificationId, responseQueueId );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseOnSubscriptionRequest( status, notificationId, responseQueueId, requestId );
+                break;
+            case OVER_VOLTAGE_SUBSCRIPTION:
+                status = RegisterSubscription( instance, OVERVOLTAGE, &notificationId, responseQueueId );
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest::OVER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                #endif
+                responseStatus = ResponseOnSubscriptionRequest( status, notificationId, responseQueueId, requestId );
+                break;
+            default:
+                // Attribute not supported
+                #ifdef SU_DBG_PRNT
+                    printf("HandleSubscriptionRequest ATTRIBUTE NOT SUPPORTED!\r\n");
+                #endif
+                responseStatus = ResponseOnSubscriptionRequest( SUBSCRIPTION_BAD_SUBSCRIPTION_REQUEST, notificationId, responseQueueId, requestId );
+                break;
+        }
+        if ( !responseStatus )
+        {
+            #ifdef SU_DBG_PRNT
+                printf("ERROR DURING RESPONDING!\r\n");
+            #endif
+        }
+    }
+}
+
+void HandleNotificationResponse( void )
+{
+    responseShortConfirmation_t response;
+    if ( GetMessageFromServerQueue( (void *)&response, SHORT_CONFIRMATION_RESPONSE ) )
+    {
+        responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)response.mtext;
+        notification_t notification;
+
+        if ( pResponseBody->confirmationValue == OK )
+        {
+            UnblockSubscriptionAfterNotification( pResponseBody->requestId );
+        }
+        else
+        {
+            UnsubscribeAfterNotification( pResponseBody->requestId ); 
         }
     }
 }
