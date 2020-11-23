@@ -1,6 +1,11 @@
-#include "errorHandling.h"
+//--External includes-------------------------------------------------
 #include <stdio.h>
-#include <stdlib.h>             // exit()
+#include <stdlib.h>
+//--------------------------------------------------------------------
+
+//--Project includes--------------------------------------------------
+#include "errorHandling.h"
+//--------------------------------------------------------------------
 
 void ReportAndExit( const char* errorMsg )
 {

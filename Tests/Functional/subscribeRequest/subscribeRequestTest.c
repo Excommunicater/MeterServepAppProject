@@ -47,7 +47,7 @@ int main()
     // Test 3 - check number of subscription after adding first subscription
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
-        NUMBER_OF_SUBSCRIPTION,         //< Check attribute METER_SERVER_VERSION
+        NUMBER_OF_SUBSCRIPTION,         
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
         true,                           //< Validate Response

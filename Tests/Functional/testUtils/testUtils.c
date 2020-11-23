@@ -384,9 +384,7 @@ void PrintTestResponse( testResponses_t response )
 
 int TestUtilGetServerQueue( void )
 {
-    int response = 0;
-    GetServerQueueId(&response);
-    return response;
+    return GetServerQueueId();
 }
 
 int TestUtilGetAndPrepareTestQueue( const char * testPath )

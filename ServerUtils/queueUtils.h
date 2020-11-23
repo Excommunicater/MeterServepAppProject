@@ -1,20 +1,19 @@
 #ifndef QUEUE_UTILS_H
 #define QUEUE_UTILS_H
 
-#include <stdbool.h> // bool
-#include <stdint.h>  // uint32_t
+#include <stdbool.h>
+#include <stdint.h> 
 
 int InitMessageQueue( const char * filePath );
 void InitServerMessageQueue( void );
-bool GetServerQueueStatus( void );
-bool GetServerQueueId( int * serverQueueId );
+int GetServerQueueId( void );
 bool GetMessageFromQueue( void * message, long messageType, int queueId );
 uint32_t GetNumberOfMessagesInQueue( int queueId );
+uint32_t GetNumberOfMessagesInServerQueue( void );
 bool GetMessageFromServerQueue( void * message, long messageType );
 bool PushMessageToQueue( void * message, long messageType, int queueId );
 void RemoveQueue( int queueId );
 void CleanAppQueue( int queueId );
 void CleanSrvQueue( void );
-//void LookForMessageInQueue( int queue );
 
 #endif //QUEUE_UTILS_H

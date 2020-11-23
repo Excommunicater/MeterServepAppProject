@@ -1,8 +1,8 @@
 #ifndef DATA_UTILS_H
 #define DATA_UTILS_H
 
-#include <stdint.h>  // uint32_t
-#include "../commonIncludes/serverMessages.h" // shortConfirmationValues_t
+#include <stdint.h>
+#include "../commonIncludes/serverMessages.h"
 
 typedef enum angleValue
 {
@@ -16,6 +16,7 @@ typedef enum angleMinMax
     ANGLE_MAX
 } angleMinMax_t;
 
+void InitMeter( void );
 void ReadStructFromDev( void );
 void StoreMaxMinValues( void );
 uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8_t phase );

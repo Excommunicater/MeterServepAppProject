@@ -1,28 +1,29 @@
-#include <sys/ipc.h>            // key_t
-#include <stdio.h>              // printf()      
+//--External includes-------------------------------------------------
+#include <sys/ipc.h>
+#include <stdio.h>    
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>            // msgget()
-#include <errno.h>              // erno
+#include <sys/msg.h>
+#include <errno.h>
+//--------------------------------------------------------------------
+
+//--Project includes--------------------------------------------------
 #include "queueUtils.h"
-#include "errorHandling.h" // ReportAndExit()
-#include "messageUtils.h"  // GetMessageSize()
-#include "../commonIncludes/projectGenerals.h"            // SERVER_VERSION
+#include "errorHandling.h"
+#include "messageUtils.h"
+#include "../commonIncludes/projectGenerals.h"
+//--------------------------------------------------------------------
 
 //--File Scope Global Variables---------------------------------------
 static bool serverQueueStatus = false;
 static int serverReceiveQueueId = 0;
 //--------------------------------------------------------------------
-bool GetServerQueueStatus( void )
-{
-    return serverQueueStatus;
-}
 
-bool GetServerQueueId( int * serverQueueId )
+
+int GetServerQueueId( void )
 {
     InitServerMessageQueue();
-    *serverQueueId = serverReceiveQueueId;
-    return serverQueueStatus;
+    return serverReceiveQueueId;
 }
 
 int InitMessageQueue( const char * filePath )
@@ -42,6 +43,7 @@ int InitMessageQueue( const char * filePath )
     }
     printf("Properly generated queue ID! ID: %i\r\n", queueId);
     serverQueueStatus = true;
+
 
     return queueId;
 
@@ -70,6 +72,11 @@ bool PushMessageToQueue( void * message, long messageType, int queueId )
     return status;
 }
 
+uint32_t GetNumberOfMessagesInServerQueue( void )
+{
+    return GetNumberOfMessagesInQueue( serverReceiveQueueId );
+}
+
 uint32_t GetNumberOfMessagesInQueue( int queueId )
 {
     
@@ -80,7 +87,6 @@ uint32_t GetNumberOfMessagesInQueue( int queueId )
     }
     //msg_qnum is msqid_ds type which is unsigned long.
     return (uint32_t)queueStructure.msg_qnum; 
-    
 }
 
 bool GetMessageFromServerQueue( void * message, long messageType  )
