@@ -20,7 +20,7 @@ const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
     { NOTIFICATION,                 sizeof(notificationMessageBody_t)},
     { SHORT_CONFIRMATION_RESPONSE,  sizeof(responseShortConfirmationBody_t) },
     { UINT32_RESPONSE,              sizeof(responseUint32Body_t) },
-    { UINT64_RESPONSE,              sizeof(responseUint64_t)},
+    { UINT64_RESPONSE,              sizeof(responseUint64Body_t)},
     { SUBSCRIPTION_RESPONSE,        sizeof(responseSubscriptionBody_t)}
 };
 //--------------------------------------------------------------------
@@ -52,6 +52,28 @@ bool ResponseUint32( uint32_t valueToResponse, shortConfirmationValues_t status,
     responseBody->status    = status;
     
     if ( PushMessageToQueue( (void*)&response, UINT32_RESPONSE, responseQueue ) )
+    {
+        #ifdef DEBUG_PRINTOUT
+            printf("Respond properly with UINT32_RESPONSE \r\n" );
+        #endif
+        retVal = true;
+    }
+
+    return retVal;
+}
+
+bool ResponseUint64( uint64_t valueToResponse, shortConfirmationValues_t status, long responseQueue, uint32_t requestId )
+{
+    bool retVal = false;
+    responseUint64_t response;
+    response.mtype = UINT32_RESPONSE;
+
+    responseUint64Body_t * responseBody = (responseUint64Body_t*)response.mtext;
+    responseBody->requestId = requestId;
+    responseBody->value     = valueToResponse;
+    responseBody->status    = status;
+    
+    if ( PushMessageToQueue( (void*)&response, UINT64_RESPONSE, responseQueue ) )
     {
         #ifdef DEBUG_PRINTOUT
             printf("Respond properly with UINT32_RESPONSE \r\n" );

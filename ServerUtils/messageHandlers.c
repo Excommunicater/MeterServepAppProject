@@ -35,6 +35,7 @@ void HandleSingleGetRequest( void )
         uint8_t instance                     = messageBody->instance;
         shortConfirmationValues_t status     = ERROR;
         uint32_t returnUint32Value           = 0U;
+        uint64_t returnUint64Value           = 0U;
         switch ( attribute )
         {
             case METER_NUMBER:
@@ -66,7 +67,20 @@ void HandleSingleGetRequest( void )
                 #endif
                 responseStatus = ResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
-
+            case PHASE_TIME_INTEGRAL_A_PLUS:
+                returnUint64Value = GetTimeIntegrals( &status, instance, A_PLUS );
+                #ifdef MH_DBG_PRNT
+                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
+                #endif
+                responseStatus = ResponseUint64( returnUint64Value, status, responseQueueId, requestId );
+                break;            
+            case PHASE_TIME_INTEGRAL_A_MINUS:
+                returnUint64Value = GetTimeIntegrals( &status, instance, A_PLUS );
+                #ifdef MH_DBG_PRNT
+                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
+                #endif
+                responseStatus = ResponseUint64( returnUint64Value, status, responseQueueId, requestId );
+                break;
             case VOLTAGE_PHASE_ANGLE:
                 returnUint32Value = GetPhaseAngle( &status, instance, ANGLE_VOLTAGE );
                 #ifdef MH_DBG_PRNT

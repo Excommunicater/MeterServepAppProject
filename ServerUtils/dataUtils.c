@@ -292,3 +292,30 @@ shortConfirmationValues_t ResetMinMaxPhaseValue( uint8_t phase, angleValue_t val
     
     return retVal;
 }
+
+uint64_t GetTimeIntegrals( shortConfirmationValues_t * status, uint8_t phase, timeIntegrals_t type )
+{
+    if ( ( type > A_MINUS ) || ( type < A_PLUS ) )
+    {
+        ReportAndExit("GetTimeIntegrals - passed type to get!");
+    }
+
+    uint64_t response = 0U;
+    if ( phase < PHASE_CNT )
+    {
+        if ( type == A_PLUS )
+        {
+            response = lastReadHardwareRegister.per_phase[phase].ai;
+        }
+        else
+        {
+            response = lastReadHardwareRegister.per_phase[phase].ae;
+        }
+    }
+    else
+    {
+        *status = BAD_INSTANCE;
+    }
+        
+    return response;
+}

@@ -16,6 +16,12 @@ typedef enum angleMinMax
     ANGLE_MAX
 } angleMinMax_t;
 
+typedef enum timeIntegrals
+{
+    A_PLUS = 0,
+    A_MINUS
+} timeIntegrals_t;
+
 void InitMeter( void );
 void ReadStructFromDev( void );
 void StoreMaxMinValues( void );
@@ -23,6 +29,7 @@ uint32_t GetInstatntenousPhaseVoltage( shortConfirmationValues_t * status, uint8
 uint32_t GetInstatntenousPhaseCurrent( shortConfirmationValues_t * status, uint8_t phase );
 uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet );
 uint32_t GetMinMaxPhaseValue( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet, angleMinMax_t minOrMax );
+uint64_t GetTimeIntegrals( shortConfirmationValues_t * status, uint8_t phase, timeIntegrals_t type );
 shortConfirmationValues_t ResetMinMaxPhaseValue( uint8_t phase, angleValue_t valueToReset, angleMinMax_t minOrMax );
 
 #endif // DATA_UTILS_H
