@@ -1,5 +1,6 @@
 #include "testUtils.h"
-#include "../../../ServerUtils/queueUtils.h"
+#include "queueUtils.h"
+#include "messagingUtils.h"
 #include <stdio.h>
 
 testResponses_t TestSingleRequestWithUint32Response( 
@@ -13,21 +14,11 @@ testResponses_t TestSingleRequestWithUint32Response(
     uint32_t requestId )
 {
     bool operationStatus = false;
-    requestSingleGet_t request;
     responseUint32_t responseUint32;
-    requestSingleGetBody_t * pRequestBody = (requestSingleGetBody_t*)request.mtext;
     responseUint32Body_t * pResponseBody = (responseUint32Body_t*)responseUint32.mtext;
 
-    //--Set Request Message-----------------------------------------------
-    request.mtype                   = GET_SINGLE_REQUEST;
-    pRequestBody->requestId         = requestId;
-    pRequestBody->attribute         = attribute;
-    pRequestBody->instance          = instance;
-    pRequestBody->queueResponseId   = responseQueueId;
-    //--------------------------------------------------------------------
-
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, GET_SINGLE_REQUEST, serverQueueId );
+    operationStatus = SendRequestGetSingle( attribute, instance, serverQueueId, responseQueueId, requestId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -73,21 +64,11 @@ testResponses_t TestResetRequestWithShortConfirmationResponse(
     uint32_t requestId )
 {
     bool operationStatus = false;
-    requestReset_t request;
     responseShortConfirmation_t responseShort;
-    requestResetBody_t * pRequestBody = (requestResetBody_t*)request.mtext;
     responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
 
-    //--Set Request Message-----------------------------------------------
-    request.mtype                   = RESET_REQUEST;
-    pRequestBody->requestId         = requestId;
-    pRequestBody->attribute         = attribute;
-    pRequestBody->instance          = instance;
-    pRequestBody->queueResponseId   = responseQueueId;
-    //--------------------------------------------------------------------
-
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, RESET_REQUEST, serverQueueId );
+    operationStatus = SendRequestReset( attribute, instance, serverQueueId, responseQueueId, requestId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -126,20 +107,11 @@ testResponses_t TestGetSingleRequestShortConfirmationResponse(
     uint32_t requestId )
 {
     bool operationStatus = false;
-    requestSingleGet_t request;
     responseShortConfirmation_t responseShort;
-    requestSingleGetBody_t * pRequestBody = (requestSingleGetBody_t*)request.mtext;
     responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
 
-    //--Set Request Message-----------------------------------------------
-    request.mtype                   = GET_SINGLE_REQUEST;
-    pRequestBody->requestId         = requestId;
-    pRequestBody->attribute         = attribute;
-    pRequestBody->instance          = instance;
-    pRequestBody->queueResponseId   = responseQueueId;
-    //--------------------------------------------------------------------
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, GET_SINGLE_REQUEST, serverQueueId );
+    operationStatus = SendRequestGetSingle( attribute, instance, serverQueueId, responseQueueId, requestId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -171,7 +143,7 @@ testResponses_t TestGetSingleRequestShortConfirmationResponse(
 
 testResponses_t TestSetRequestWithShortConfirmationResponse( 
     uint8_t instance, 
-    attributesToGet_t attribute, 
+    attributesToSet_t attribute, 
     int responseQueueId, 
     int serverQueueId,
     shortConfirmationValues_t expectedStatus,
@@ -179,21 +151,11 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
     uint32_t valueToSet )
 {
     bool operationStatus = false;
-    requestSingleSet_t request;
     responseShortConfirmation_t responseShort;
-    requestSingleSetBody_t * pRequestBody = (requestSingleSetBody_t*)request.mtext;
     responseShortConfirmationBody_t * pResponseBody = (responseShortConfirmationBody_t*)responseShort.mtext;
 
-    //--Set Request Message-----------------------------------------------
-    request.mtype                   = SET_SINGLE_REQUEST;
-    pRequestBody->requestId         = requestId;
-    pRequestBody->queueResponseId   = responseQueueId;
-    pRequestBody->instance          = instance;
-    pRequestBody->attribute         = attribute;
-    pRequestBody->valueToSet        = valueToSet;
-    //--------------------------------------------------------------------
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, SET_SINGLE_REQUEST, serverQueueId );
+    operationStatus = SendRequestSetSingle( valueToSet, attribute, instance, serverQueueId, responseQueueId, requestId);
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -224,8 +186,8 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
 }
 
 testResponses_t TestSubscribeRequestWithSubscriptionResponse( 
-    uint8_t instance, 
-    attributesToGet_t attribute, 
+    uint8_t instance,  
+    subscription_t subscriptionToRequest,
     int responseQueueId, 
     int serverQueueId,
     subscriptionRegistrationStatus_t expectedStatus,
@@ -233,20 +195,11 @@ testResponses_t TestSubscribeRequestWithSubscriptionResponse(
     uint8_t * notificationId )
 {
     bool operationStatus = false;
-    requestSubscription_t request;
     responseSubscription_t response;
-    requestSubscriptionBody_t * pRequestBody = (requestSubscriptionBody_t*)request.mtext;
     responseSubscriptionBody_t * pResponseBody;
 
-    //--Set Request Message-----------------------------------------------
-    request.mtype                   = SUBSCRIBE_REQUEST;
-    pRequestBody->requestId         = requestId;
-    pRequestBody->queueResponseId   = responseQueueId;
-    pRequestBody->instance          = instance;
-    pRequestBody->attribute         = attribute;
-    //--------------------------------------------------------------------
     // Try to push Request to server
-    operationStatus = PushMessageToQueue( (void*)&request, SUBSCRIBE_REQUEST, serverQueueId );
+    operationStatus = SendRequestSubsciption( subscriptionToRequest, instance, serverQueueId, responseQueueId, requestId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -310,13 +263,8 @@ testResponses_t TestResponseToNotification(
     int queue,
     shortConfirmationValues_t valueToResponse )
 {
-    responseShortConfirmation_t response;
-    responseShortConfirmationBody_t * responseBody = (responseShortConfirmationBody_t*)response.mtext;
-    response.mtype = SHORT_CONFIRMATION_RESPONSE;
-    responseBody->confirmationValue = valueToResponse;
-    responseBody->requestId = responseId;
     // Try to push Request to server
-    bool operationStatus = PushMessageToQueue( (void*)&response, SHORT_CONFIRMATION_RESPONSE, queue );
+    bool operationStatus = SendResponseShortConfirmation( valueToResponse, queue, responseId );
 
     // I know it's good to have only one return from function... 
     // But it will increase readibility - appliest to whole function
@@ -382,14 +330,16 @@ void PrintTestResponse( testResponses_t response )
     }
 }
 
-int TestUtilGetServerQueue( void )
-{
-    return GetServerQueueId();
-}
-
 int TestUtilGetAndPrepareTestQueue( const char * testPath )
 {
     int testQueue = InitMessageQueue( testPath );
-    CleanAppQueue(testQueue);
+    CleanQueue(testQueue);
     return testQueue;
+}
+
+int TestUtilGetServerQueue( void )
+{
+    int serverQueue = InitMessageQueue( SERVER_PATH_NAME );
+    CleanQueue(serverQueue);
+    return serverQueue;
 }

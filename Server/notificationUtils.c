@@ -6,11 +6,14 @@
 #include <string.h> 
 //--------------------------------------------------------------------
 
+//--Project includes--------------------------------------------------
+#include "errorHandling.h"
+#include "metering_interface.h"
+#include "instantaneousMeterValues.h"
+//--------------------------------------------------------------------
+
 //--Local includes----------------------------------------------------
 #include "notificationUtils.h"
-#include "dataUtils.h" // GetInstatntenousPhaseVoltage()
-#include "errorHandling.h"
-#include "../commonIncludes/metering_interface.h" // PHASE_CNT
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------

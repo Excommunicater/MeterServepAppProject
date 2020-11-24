@@ -7,5 +7,12 @@ add_library(${thisLibrary}
 )
 
 target_link_libraries(${thisLibrary} 
-    serverUtils
+    queueUtils
+    messagingUtils
+)
+
+target_include_directories(${thisLibrary}
+    PUBLIC ../../../commonIncludes/ 
+    PUBLIC ../../../CommonUtils/QueueUtils/
+    PUBLIC ../../../CommonUtils/MessagingUtils/
 )

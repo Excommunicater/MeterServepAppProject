@@ -1,2 +1,2 @@
 #!/bin/sh
-./out/build/ServerStart/ServerStart
+./out/build/Server/server

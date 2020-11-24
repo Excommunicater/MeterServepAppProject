@@ -1,2 +1,2 @@
 #!/bin/sh
-./out/build/MeterHardware/meteringHw
+./out/build/MeterSimulator/meterSimulator

@@ -1,5 +1,5 @@
-#ifndef SERVER_MESSAGES_H
-#define SERVER_MESSAGES_H
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
 //--External includes-------------------------------------------------
 #include <stdint.h>
 //--------------------------------------------------------------------
@@ -182,7 +182,7 @@ typedef struct requestResetBody
     int queueResponseId;           //< To this queue ID response shall be sent
     uint8_t instance;              //< Phaze number or notificationId
     attributesToReset_t attribute; //< Attribute to reset
-    uint8_t additionalData;
+    //uint8_t additionalData;
 } requestResetBody_t;
 //--------------------------------------------------------------------
 
@@ -390,4 +390,4 @@ typedef struct responseSubscription
 } responseSubscription_t;
 //--------------------------------------------------------------------
 
-#endif // SERVER_MESSAGES_H
+#endif // PROTOCOL_H

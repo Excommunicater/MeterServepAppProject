@@ -3,7 +3,7 @@
 
 #include <stdbool.h> // bool
 #include <stdint.h>  // uint32_t
-#include "../../../commonIncludes/serverMessages.h"
+#include "protocol.h"
 
 typedef enum testResponses
 {
@@ -49,7 +49,7 @@ testResponses_t TestResetRequestWithShortConfirmationResponse(
 
 testResponses_t TestSetRequestWithShortConfirmationResponse( 
     uint8_t instance, 
-    attributesToGet_t attribute, 
+    attributesToSet_t attribute, 
     int responseQueueId, 
     int serverQueueId,
     shortConfirmationValues_t expectedStatus,
@@ -57,8 +57,8 @@ testResponses_t TestSetRequestWithShortConfirmationResponse(
     uint32_t valueToSet );
 
 testResponses_t TestSubscribeRequestWithSubscriptionResponse( 
-    uint8_t instance, 
-    attributesToGet_t attribute, 
+    uint8_t instance,  
+    subscription_t subscriptionToRequest,
     int responseQueueId, 
     int serverQueueId,
     subscriptionRegistrationStatus_t expectedStatus,
