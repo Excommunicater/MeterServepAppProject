@@ -55,6 +55,58 @@ testResponses_t TestSingleRequestWithUint32Response(
     return TEST_OK;
 }
 
+testResponses_t TestSingleRequestWithUint64Response( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    bool validateResponseValue, 
+    uint64_t expectedResponse,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId )
+{
+    bool operationStatus = false;
+    responseUint64_t responseUint64;
+    responseUint64Body_t * pResponseBody = (responseUint64Body_t*)responseUint64.mtext;
+
+    // Try to push Request to server
+    operationStatus = SendRequestGetSingle( attribute, instance, serverQueueId, responseQueueId, requestId );
+
+    // I know it's good to have only one return from function... 
+    // But it will increase readibility - appliest to whole function
+    if ( operationStatus == false )
+    {
+        return TEST_ERROR_SENDING_REQUEST;
+    }
+
+    // Wait for response
+    while ( GetNumberOfMessagesInQueue(responseQueueId) == 0U );
+    
+    if ( GetMessageFromQueue( (void*)&responseUint64, UINT64_RESPONSE, responseQueueId ) )
+    {
+        pResponseBody = (responseUint64Body_t*)responseUint64.mtext;
+        if( pResponseBody->requestId != requestId )
+        {
+            return TEST_ERROR_SEGMENTATION;
+        }
+
+        if ( ( validateResponseValue == true ) && ( pResponseBody->value != expectedResponse ) )
+        {
+            return TEST_ERROR_NOT_EXPECTED_VALUE;
+        }
+
+        if ( pResponseBody->status != expectedStatus )
+        {
+            return TEST_ERROR_NOT_EXPECTED_STATUS;
+        }
+    }
+    else
+    {
+        return TEST_ERROR_RECIVE_RESPONSE;
+    }
+    return TEST_OK;
+}
+
 testResponses_t TestResetRequestWithShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 

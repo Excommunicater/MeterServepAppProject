@@ -31,6 +31,16 @@ testResponses_t TestSingleRequestWithUint32Response(
     shortConfirmationValues_t expectedStatus,
     uint32_t requestId );
 
+testResponses_t TestSingleRequestWithUint64Response( 
+    uint8_t instance, 
+    attributesToGet_t attribute, 
+    int responseQueueId, 
+    int serverQueueId,
+    bool validateResponseValue, 
+    uint64_t expectedResponse,
+    shortConfirmationValues_t expectedStatus,
+    uint32_t requestId );
+
 testResponses_t TestGetSingleRequestShortConfirmationResponse( 
     uint8_t instance, 
     attributesToGet_t attribute, 
