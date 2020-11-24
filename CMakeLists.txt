@@ -5,13 +5,14 @@ set(thisProject PhoenixRozmowaProject)
 project(${thisProject} )
 
 # Libraries to build
-add_subdirectory(ServerUtils)
+add_subdirectory(CommonUtils)
+add_subdirectory(MeterUtils)
 
 # Separate projects to build
-add_subdirectory(ServerStart)
-add_subdirectory(MeterHardware)
-add_subdirectory(ApplicationStart)
+add_subdirectory(Server)
+add_subdirectory(MeterSimulator)
+add_subdirectory(ApplicationExample)
 
 # Tests and test framework
-add_subdirectory(external/googletest)
+#add_subdirectory(external/googletest)
 add_subdirectory(Tests)

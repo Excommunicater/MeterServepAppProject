@@ -278,5 +278,33 @@ int main()
     requestId++;
     ParseTestResponse(testResponse, &wholeTestResponse);
 
+    // Test 20 - Request for PHASE_TIME_INTEGRAL_A_PLUS - Good instance
+    testResponse = TestSingleRequestWithUint64Response(
+        12U,                            //< Good instance number
+        PHASE_TIME_INTEGRAL_A_PLUS,     //< Check attribute PHASE_TIME_INTEGRAL_A_PLUS
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
+    // Test 21 - Request for PHASE_TIME_INTEGRAL_A_PLUS - Bad instance
+    testResponse = TestSingleRequestWithUint64Response(
+        12U,                            //< Bad instance number
+        PHASE_TIME_INTEGRAL_A_PLUS,     //< Check attribute PHASE_TIME_INTEGRAL_A_PLUS
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        false,                          //< Do not validate Response
+        0,                              //< No matter
+        BAD_INSTANCE,                   //< Expected response status
+        requestId                       //< Request ID       
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);
+
     PrintTestResults( wholeTestResponse, THIS_TEST_PATH );
 }

@@ -1,20 +1,31 @@
 //--External includes-------------------------------------------------
 #include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <stdbool.h>
+//--------------------------------------------------------------------
+
+//--Project includes--------------------------------------------------
+#include "meterUtils.h"
+#include "minMaxValues.h"
 //--------------------------------------------------------------------
 
 //--Local includes----------------------------------------------------
-#include "dataUtils.h"
-#include "queueUtils.h"
-#include "messageHandlers.h"
+#include "serverQueueUtils.h"
+#include "serverMessageHandlers.h"
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
+void StartServer( void );
+void InitServer( void );
 void HandleIncomingMessages( void );
 void HandleOutgoingMessages( void );
 //--------------------------------------------------------------------
+
+int main()
+{
+    InitServer();
+    StartServer();
+    // Should not reach this place
+    return 0;
+}
 
 void StartServer( void )
 {
@@ -32,7 +43,7 @@ void InitServer( void )
 {
     InitMeter();
     InitServerMessageQueue();
-    CleanSrvQueue();
+    CleanServerQueue();
 }
 
 

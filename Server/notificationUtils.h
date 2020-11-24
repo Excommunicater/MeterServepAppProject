@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../commonIncludes/serverMessages.h"
+#include "protocol.h"
 
 typedef enum theseholdType
 {
@@ -19,7 +19,7 @@ typedef struct notification
     uint32_t notificationMessageId;
     #if SERVER_64_BIT == true
         uint64_t timeStamp;
-    #elif
+    #else
         uint32_t timeStamp;
     #endif
 } notification_t;
