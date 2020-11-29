@@ -40,7 +40,7 @@ void ReadStructFromDev( void )
     int fifoFile = open(DEV_FILE, O_RDONLY);
     fdarray[0].fd = fifoFile;
     fdarray[0].events = POLLIN;
-    int rc = poll(fdarray, 1, 1);
+    int rc = poll(fdarray, 1, 500);
     if ( ( rc == 1 ) && ( fdarray[0].revents == POLLIN ) )
     {
         read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));
