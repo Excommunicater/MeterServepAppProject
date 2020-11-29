@@ -31,7 +31,7 @@ void StoreNonVolatileData( void * pData, size_t dataSize )
 
     if ( IsFileExist() == false )
     {
-        ReportAndExit("StoreNonVolatileData - Cannot create file...\r\n");
+        ReportAndExit("StoreNonVolatileData - File do not exist, or cannot open it...\r\n");
     }
     if ( fwrite( pData, dataSize, 1, pFile ) != 1 )
     {
@@ -57,7 +57,10 @@ void RestoreNonVolatileData( void * pData, size_t dataSize )
     }
     if ( GetFileSize() < dataSize )
     {
-        ReportAndExit("RestoreNonVolatileData - Cannot restore data, file smaller then expected data size...\r\n");
+        printf("WARNING! File is corrupted... Remove corrupted one and create new one\r\n");
+        remove(DATA_FILE_PATH);
+        CreateFile();
+        return;
     }
 
     // Read binary from beginning
@@ -110,5 +113,4 @@ void CreateFile( void )
         ReportAndExit("CreateFile - Error closing the file\r\n");
     }
 }
-
 

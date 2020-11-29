@@ -164,20 +164,6 @@ int main()
     // Test 12 - check is subscription is deleted
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
-        NUMBER_OF_SUBSCRIPTION,         //< 
-        appQueueId,                     //< Pass test response queue ID
-        serverQueueId,                  //< Pass server request queue ID
-        true,                           //< Validate Response
-        0,   //< Expected Response
-        OK,                             //< Expected response status
-        requestId                       //< Request ID
-    );
-    requestId++;
-    ParseTestResponse(testResponse, &wholeTestResponse);
-
-    // Test 13 - check is subscription is deleted
-    testResponse = TestSingleRequestWithUint32Response(
-        0,                              //< Instance is not important
         NUMBER_OF_ACTIVE_SUBSCRIPTION,  //< 
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
@@ -190,7 +176,7 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
 
 
-    // Test 14 - Try to remove all subscriptions
+    // Test 13 - Try to remove all subscriptions
     testResponse = TestResetRequestWithShortConfirmationResponse(
         1U,                             //< instance - not important
         UNSUBSCRIBE_ALL,                //< Remove all subscription
@@ -203,10 +189,24 @@ int main()
     ParseTestResponse(testResponse, &wholeTestResponse);
     expectedNumberOfSubscription = 0U;
 
-    // Test 15 - check number of subscription after removing all
+    // Test 14 - check number of subscription after removing all
     testResponse = TestSingleRequestWithUint32Response(
         0,                              //< Instance is not important
         NUMBER_OF_SUBSCRIPTION,         //< Check attribute NUMBER_OF_SUBSCRIPTION
+        appQueueId,                     //< Pass test response queue ID
+        serverQueueId,                  //< Pass server request queue ID
+        true,                           //< Validate Response
+        expectedNumberOfSubscription,   //< Expected Response
+        OK,                             //< Expected response status
+        requestId                       //< Request ID
+    );
+    requestId++;
+    ParseTestResponse(testResponse, &wholeTestResponse);   
+
+    // Test 15 - check number of subscription after removing all
+    testResponse = TestSingleRequestWithUint32Response(
+        0,                              //< Instance is not important
+        NUMBER_OF_ACTIVE_SUBSCRIPTION,  //< Check attribute NUMBER_OF_ACTIVE_SUBSCRIPTION
         appQueueId,                     //< Pass test response queue ID
         serverQueueId,                  //< Pass server request queue ID
         true,                           //< Validate Response
