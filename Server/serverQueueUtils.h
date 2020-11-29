@@ -10,4 +10,4 @@ uint32_t GetNumberOfMessagesInServerQueue( void );
 bool GetMessageFromServerQueue( void * message, long messageType );
 void CleanServerQueue( void );
 
-#endif //QUEUE_UTILS_H
+#endif // SERVER_QUEUE_UTILS_H

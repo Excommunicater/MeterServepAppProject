@@ -93,26 +93,21 @@ uint32_t GetNumberOfMessagesInQueue( int queueId )
 
 void RemoveQueue( int queueId )
 {
-    if ( GetNumberOfMessagesInQueue( queueId ) != 0U )
+    struct msqid_ds queueStructure; // This is ignored with IPC_RMID
+    if ( msgctl(queueId, IPC_RMID, &queueStructure) != 0 )
     {
-        // Queue not empty - cleanup the Queue
-        struct msqid_ds queueStructure; // This is ignored with IPC_RMID
-        if ( msgctl(queueId, IPC_RMID, &queueStructure) != 0 )
-        {
-            ReportAndExit("Error during queue cleanup...\r\n");
-        }
-        else
-        {
-            printf("Properly removed queue!\r\n");
-        }
+        ReportAndExit("Error during queue removing...\r\n");
     }
-
+    else
+    {
+        printf("Properly removed queue!\r\n");
+    }
 }
 
 void CleanQueue( int queueId )
 {
     // I know it's ugly....
-    // When I found better way, I'll fix it
+    // When I found better way, I'll fix it ;)
     uint32_t messagesInQueue = GetNumberOfMessagesInQueue( queueId );
     for (uint32_t i = 0U; i < messagesInQueue; i++)
     {
@@ -125,14 +120,14 @@ void CleanQueue( int queueId )
         requestSingleSet_t requestSingleSet;
         requestReset_t requestReset;
         requestSubscription_t requestSubscription;
-        GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, queueId );
-        GetMessageFromQueue( (void*)&responseUint64, UINT64_RESPONSE, queueId );
-        GetMessageFromQueue( (void*)&responseShort, SHORT_CONFIRMATION_RESPONSE, queueId );
-        GetMessageFromQueue( (void*)&responseSubscription, SUBSCRIPTION_RESPONSE, queueId );
-        GetMessageFromQueue( (void*)&notificationMesssage, NOTIFICATION, queueId );
-        GetMessageFromQueue( (void*)&requestSingle, SET_SINGLE_REQUEST, queueId );
-        GetMessageFromQueue( (void*)&requestSingle, GET_SINGLE_REQUEST, queueId );
-        GetMessageFromQueue( (void*)&requestReset, RESET_REQUEST, queueId );
-        GetMessageFromQueue( (void*)&requestSubscription, SUBSCRIBE_REQUEST, queueId );
+        GetMessageFromQueue( (void*)&responseUint32,       UINT32_RESPONSE,             queueId );
+        GetMessageFromQueue( (void*)&responseUint64,       UINT64_RESPONSE,             queueId );
+        GetMessageFromQueue( (void*)&responseShort,        SHORT_CONFIRMATION_RESPONSE, queueId );
+        GetMessageFromQueue( (void*)&responseSubscription, SUBSCRIPTION_RESPONSE,       queueId );
+        GetMessageFromQueue( (void*)&notificationMesssage, NOTIFICATION,                queueId );
+        GetMessageFromQueue( (void*)&requestSingle,        SET_SINGLE_REQUEST,          queueId );
+        GetMessageFromQueue( (void*)&requestSingle,        GET_SINGLE_REQUEST,          queueId );
+        GetMessageFromQueue( (void*)&requestReset,         RESET_REQUEST,               queueId );
+        GetMessageFromQueue( (void*)&requestSubscription,  SUBSCRIBE_REQUEST,           queueId );
     }
 }

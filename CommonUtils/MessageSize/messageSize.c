@@ -1,3 +1,4 @@
+//--Project includes--------------------------------------------------
 #include "messageSize.h"
 #include "protocol.h"
 //--------------------------------------------------------------------
@@ -8,8 +9,10 @@ typedef struct messageTypeSize
     long   type;
     size_t size;
 } messageTypeSize_t;
+//--------------------------------------------------------------------
 
-const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
+//--File Scope Variables----------------------------------------------
+static const messageTypeSize_t SIZE_TYPE_ARRAY[NUMBER_OF_MESSAGE_TYPES] =
 {
     { GET_SINGLE_REQUEST,           sizeof(requestSingleGetBody_t) },
     { RESET_REQUEST,                sizeof(requestResetBody_t) },

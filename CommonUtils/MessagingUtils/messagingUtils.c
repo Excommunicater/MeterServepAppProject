@@ -1,6 +1,7 @@
-
+//--Project includes--------------------------------------------------
 #include "messagingUtils.h"
 #include "queueUtils.h"
+//--------------------------------------------------------------------
 
 bool SendResponseUint32( uint32_t valueToResponse, shortConfirmationValues_t status, long responseQueue, uint32_t requestId )
 {

@@ -16,6 +16,7 @@
 #define APPLICATION_FILE "./ApplicationExample/main.c"
 //--------------------------------------------------------------------
 
+//--Local Structures--------------------------------------------------
 typedef struct dataToDisplay
 {
     uint32_t serverVersion;
@@ -33,6 +34,7 @@ typedef struct dataToDisplay
     uint32_t CA2;
     uint32_t CA3;
 } dataToDisplay_t;
+//--------------------------------------------------------------------
 
 //--File scope Variables----------------------------------------------
 static int serverQueue = 0;
@@ -106,10 +108,6 @@ void PrintData( void )
     printf("VOLTAGE ANGLE:      |    %07.3f    |    %07.3f    |    %07.3f    |\r\n", (float)(dataToDisplay.VA1), (float)(dataToDisplay.VA2), (float)(dataToDisplay.VA3));
     printf("CURRENT ANGLE:      |    %07.3f    |    %07.3f    |    %07.3f    |\r\n", (float)(dataToDisplay.CA1), (float)(dataToDisplay.CA2), (float)(dataToDisplay.CA3));
     printf("--------------------------------------------------------------------\r\n");
-    /*printf("\033[1;32m"); //Set the text to the bold green  
-
-
-    printf("\033[1;0m"); //Resets the text to default color*/
 }
 
 uint32_t GetUniqueRequestId( void )

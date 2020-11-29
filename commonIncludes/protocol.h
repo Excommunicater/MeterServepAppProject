@@ -182,7 +182,6 @@ typedef struct requestResetBody
     int queueResponseId;           //< To this queue ID response shall be sent
     uint8_t instance;              //< Phaze number or notificationId
     attributesToReset_t attribute; //< Attribute to reset
-    //uint8_t additionalData;
 } requestResetBody_t;
 //--------------------------------------------------------------------
 

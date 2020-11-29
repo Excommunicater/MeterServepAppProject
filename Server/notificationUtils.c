@@ -40,7 +40,7 @@ typedef struct subscriptionRecord
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
-const uint8_t MAXIMUM_SUBSCRIPTION_NUMBER = 5U;
+static const uint8_t MAXIMUM_SUBSCRIPTION_NUMBER = 5U;
 //--------------------------------------------------------------------
 
 //--File Scope Global Variables---------------------------------------

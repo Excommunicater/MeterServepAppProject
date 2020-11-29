@@ -1,5 +1,5 @@
-#ifndef MESSAGE_HANDLERS_H
-#define MESSAGE_HANDLERS_H
+#ifndef SERVER_MESSAGE_HANDLERS_H
+#define SERVER_MESSAGE_HANDLERS_H
 
 void HandleSingleGetRequest( void );
 void HandleSingleSetRequest( void );
@@ -8,4 +8,4 @@ void HandleSubscriptionRequest( void );
 void HandleSendingNotifications( void );
 void HandleNotificationResponse( void );
 
-#endif // MESSAGE_HANDLERS_H
+#endif // SERVER_MESSAGE_HANDLERS_H

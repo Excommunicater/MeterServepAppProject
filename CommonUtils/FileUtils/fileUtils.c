@@ -20,7 +20,7 @@ size_t GetFileSize( void );
 void CreateFile( void );
 //--------------------------------------------------------------------
 
-//--File Scope Global Variables---------------------------------------
+//--File Scope Variables----------------------------------------------
 static FILE * pFile;
 //--------------------------------------------------------------------
 
@@ -51,13 +51,13 @@ void RestoreNonVolatileData( void * pData, size_t dataSize )
 {
     if ( IsFileExist() == false )
     {
-        // File do not exist - create one!
+        printf("WARNING! File do not exist... Creating new one!\r\n");
         CreateFile();
         return;
     }
     if ( GetFileSize() < dataSize )
     {
-        printf("WARNING! File is corrupted... Remove corrupted one and create new one\r\n");
+        printf("WARNING! File is corrupted... Removing corrupted one and creating new one!\r\n");
         remove(DATA_FILE_PATH);
         CreateFile();
         return;

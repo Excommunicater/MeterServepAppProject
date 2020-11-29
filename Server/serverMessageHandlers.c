@@ -22,8 +22,8 @@
 //--------------------------------------------------------------------
 
 //--Consts------------------------------------------------------------
-const uint32_t ATTRIBUTE_SERVER_VERSION = SERVER_VERSION; //8 Digit
-const uint32_t ATTRIBUTE_METER_NUMBER   = 01234567U;      //8 Digit
+static const uint32_t ATTRIBUTE_SERVER_VERSION = SERVER_VERSION; // For now it's hardcodded - Should it be get from device?
+static const uint32_t ATTRIBUTE_METER_NUMBER   = 01234567U;      // For now it's hardcodded - Should it be get from device?
 //--------------------------------------------------------------------
 
 void HandleSingleGetRequest( void )

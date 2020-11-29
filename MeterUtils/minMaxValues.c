@@ -29,6 +29,8 @@ extern meter_hw_registers_t lastReadHardwareRegister; //< Defined in meterUtils.
 //--File Scope Global Variables---------------------------------------
 static maxMinPerPhaseVoltageAndCurrent_t maxMinVI[PHASE_CNT] = {0};
 //--------------------------------------------------------------------
+
+
 void StoreMaxMinValues( void )
 {
     for ( uint8_t i = 0U; i < PHASE_CNT; i++ )
