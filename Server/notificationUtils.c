@@ -7,13 +7,10 @@
 //--------------------------------------------------------------------
 
 //--Project includes--------------------------------------------------
+#include "notificationUtils.h"
 #include "errorHandling.h"
 #include "metering_interface.h"
 #include "instantaneousMeterValues.h"
-//--------------------------------------------------------------------
-
-//--Local includes----------------------------------------------------
-#include "notificationUtils.h"
 //--------------------------------------------------------------------
 
 //--Defines-----------------------------------------------------------
@@ -51,12 +48,12 @@ uint8_t actualNumberOfSubscriptions = 0U;
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
-void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
-uint8_t GetNewUniqueNotificationId( void );
-subscriptionRecord_t * FindLastElement( void );
-bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
-bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription );
-uint32_t GetUniqueNotificationMessageId( void );
+static void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
+static uint8_t GetNewUniqueNotificationId( void );
+static subscriptionRecord_t * FindLastElement( void );
+static bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue );
+static bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription );
+static uint32_t GetUniqueNotificationMessageId( void );
 //--------------------------------------------------------------------
 
 shortConfirmationValues_t SetVoltageThresehold( uint8_t phase, theseholdType_t typeToSet, uint32_t valueToSet )
@@ -140,7 +137,40 @@ subscriptionRegistrationStatus_t RegisterSubscription( uint8_t phase, theseholdT
     return retVal;
 }
 
-void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
+void UnblockSubscriptionAfterNotification( uint32_t notificationMessageId )
+{
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
+        {
+            pTemp->isActive = true;
+            return;
+        }
+        pTemp = pTemp->pNext;
+    }
+}
+
+void UnsubscribeAfterNotification( uint32_t notificationMessageId )
+{
+    subscriptionRecord_t * pTemp = pSubscriptionListHead;
+
+    while ( pTemp != (subscriptionRecord_t*)NULL )
+    {
+        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
+        {
+            if ( Unsubscribe( pTemp->notificationId ) != OK )
+            {
+                ReportAndExit("UnsubscribeAfterNotification - Problem with removing subscription...");
+            }
+            return;
+        }
+        pTemp = pTemp->pNext;
+    }
+}
+
+static void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
     uint8_t newId = GetNewUniqueNotificationId();
 
@@ -172,7 +202,7 @@ void AddNewSubscription( uint8_t phase, theseholdType_t type, uint8_t * notifica
     *notificationId = newId;
 }
 
-uint8_t GetNewUniqueNotificationId( void )
+static uint8_t GetNewUniqueNotificationId( void )
 {
     uint8_t respVal = 0U;
     subscriptionRecord_t * pTempPointer = pSubscriptionListHead;
@@ -190,7 +220,7 @@ uint8_t GetNewUniqueNotificationId( void )
     return respVal;
 }
 
-subscriptionRecord_t* FindLastElement( void )
+static subscriptionRecord_t* FindLastElement( void )
 {
     subscriptionRecord_t * pRetVal = NULL;
     subscriptionRecord_t * pTemp = pSubscriptionListHead;
@@ -203,7 +233,7 @@ subscriptionRecord_t* FindLastElement( void )
     return pRetVal;
 }
 
-bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
+static bool CheckSubscriptionDuplication( uint8_t phase, theseholdType_t type, uint8_t * notificationId, int notificationQueue )
 {
     subscriptionRecord_t * pTemp = pSubscriptionListHead;
     bool retVal = false;
@@ -323,7 +353,7 @@ bool PopNotification( notification_t * notification )
 }
 
 
-bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription )
+static bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription )
 {
     bool retVal = false;
     if ( subscription->isActive )
@@ -355,43 +385,9 @@ bool CheckSubscriptionForNotification( subscriptionRecord_t * subscription )
     return retVal;
 }
 
-uint32_t GetUniqueNotificationMessageId( void )
+static uint32_t GetUniqueNotificationMessageId( void )
 {
     static uint32_t id = 1;
     id++;
     return id;
 }
-
-void UnblockSubscriptionAfterNotification( uint32_t notificationMessageId )
-{
-    subscriptionRecord_t * pTemp = pSubscriptionListHead;
-
-    while ( pTemp != (subscriptionRecord_t*)NULL )
-    {
-        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
-        {
-            pTemp->isActive = true;
-            return;
-        }
-        pTemp = pTemp->pNext;
-    }
-}
-
-void UnsubscribeAfterNotification( uint32_t notificationMessageId )
-{
-    subscriptionRecord_t * pTemp = pSubscriptionListHead;
-
-    while ( pTemp != (subscriptionRecord_t*)NULL )
-    {
-        if ( ( pTemp->isActive == false ) && ( pTemp->sentNotificationMessageId == notificationMessageId ) )
-        {
-            if ( Unsubscribe( pTemp->notificationId ) != OK )
-            {
-                ReportAndExit("UnsubscribeAfterNotification - Problem with removing subscription...");
-            }
-            return;
-        }
-        pTemp = pTemp->pNext;
-    }
-}
-

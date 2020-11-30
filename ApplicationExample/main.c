@@ -43,11 +43,11 @@ static dataToDisplay_t dataToDisplay;
 //--------------------------------------------------------------------
 
 //--Function Declaration----------------------------------------------
-void InitApplication( void );
-void GetDataFromServer( void );
-void PrintData( void );
-uint32_t GetUniqueRequestId( void );
-void GetUint32Blocking( attributesToGet_t attribute, uint32_t instance, uint32_t * pDestination );
+static void InitApplication( void );
+static void GetDataFromServer( void );
+static void PrintData( void );
+static uint32_t GetUniqueRequestId( void );
+static void GetUint32Blocking( attributesToGet_t attribute, uint32_t instance, uint32_t * pDestination );
 //--------------------------------------------------------------------
 
 int main( void )
@@ -62,22 +62,22 @@ int main( void )
     return 0;
 }
 
-void InitApplication( void )
+static void InitApplication( void )
 {
     applicationQueue = InitMessageQueue( APPLICATION_FILE );
     CleanQueue(applicationQueue);
     serverQueue = InitMessageQueue( SERVER_PATH_NAME );
 }
 
-void GetDataFromServer( void )
+static void GetDataFromServer( void )
 {
     static bool getOnce = true;
     bool status = false;
     if ( getOnce )
     {
         getOnce = false;
-        GetUint32Blocking( METER_SERVER_VERSION, 0, &(dataToDisplay.serverVersion) );
-        GetUint32Blocking( METER_NUMBER, 0, &(dataToDisplay.meterNumber) );
+        GetUint32Blocking( METER_SERVER_VERSION,    0, &(dataToDisplay.serverVersion) );
+        GetUint32Blocking( METER_NUMBER,            0, &(dataToDisplay.meterNumber) );
     }
     GetUint32Blocking( INSTATNTENOUS_PHASE_VOLTAGE, 0, &(dataToDisplay.IPV1) );
     GetUint32Blocking( INSTATNTENOUS_PHASE_VOLTAGE, 1, &(dataToDisplay.IPV2) );
@@ -86,15 +86,15 @@ void GetDataFromServer( void )
     GetUint32Blocking( INSTATNTENOUS_PHASE_CURRENT, 1, &(dataToDisplay.IPC2) );
     GetUint32Blocking( INSTATNTENOUS_PHASE_CURRENT, 2, &(dataToDisplay.IPC3) );
 
-    GetUint32Blocking( VOLTAGE_PHASE_ANGLE, 0, &(dataToDisplay.VA1) );
-    GetUint32Blocking( VOLTAGE_PHASE_ANGLE, 1, &(dataToDisplay.VA2) );
-    GetUint32Blocking( VOLTAGE_PHASE_ANGLE, 2, &(dataToDisplay.VA3) );
-    GetUint32Blocking( CURRENT_PHASE_ANGLE, 0, &(dataToDisplay.CA1) );
-    GetUint32Blocking( CURRENT_PHASE_ANGLE, 1, &(dataToDisplay.CA2) );
-    GetUint32Blocking( CURRENT_PHASE_ANGLE, 2, &(dataToDisplay.CA3) );
+    GetUint32Blocking( VOLTAGE_PHASE_ANGLE,         0, &(dataToDisplay.VA1) );
+    GetUint32Blocking( VOLTAGE_PHASE_ANGLE,         1, &(dataToDisplay.VA2) );
+    GetUint32Blocking( VOLTAGE_PHASE_ANGLE,         2, &(dataToDisplay.VA3) );
+    GetUint32Blocking( CURRENT_PHASE_ANGLE,         0, &(dataToDisplay.CA1) );
+    GetUint32Blocking( CURRENT_PHASE_ANGLE,         1, &(dataToDisplay.CA2) );
+    GetUint32Blocking( CURRENT_PHASE_ANGLE,         2, &(dataToDisplay.CA3) );
 }
 
-void PrintData( void )
+static void PrintData( void )
 {
     system("clear");
     printf("--------------------------------------------------------------------\r\n");
@@ -110,14 +110,14 @@ void PrintData( void )
     printf("--------------------------------------------------------------------\r\n");
 }
 
-uint32_t GetUniqueRequestId( void )
+static uint32_t GetUniqueRequestId( void )
 {
     static uint32_t id = 1;
     id++;
     return id;
 }
 
-void GetUint32Blocking( attributesToGet_t attribute, uint32_t instance, uint32_t * pDestination )
+static void GetUint32Blocking( attributesToGet_t attribute, uint32_t instance, uint32_t * pDestination )
 {
     responseUint32_t responseUint32;
     responseUint32Body_t * pResponseBody = (responseUint32Body_t*)responseUint32.mtext;

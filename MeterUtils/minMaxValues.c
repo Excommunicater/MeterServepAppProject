@@ -30,7 +30,6 @@ extern meter_hw_registers_t lastReadHardwareRegister; //< Defined in meterUtils.
 static maxMinPerPhaseVoltageAndCurrent_t maxMinVI[PHASE_CNT] = {0};
 //--------------------------------------------------------------------
 
-
 void StoreMaxMinValues( void )
 {
     for ( uint8_t i = 0U; i < PHASE_CNT; i++ )
@@ -65,7 +64,6 @@ void StoreMaxMinValues( void )
         }
     }
 }
-
 
 uint32_t GetMinMaxPhaseValue( shortConfirmationValues_t * status, uint8_t phase, angleValue_t valueToGet, angleMinMax_t minOrMax )
 {

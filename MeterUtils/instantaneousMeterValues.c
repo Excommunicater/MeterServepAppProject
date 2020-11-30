@@ -88,6 +88,11 @@ uint32_t GetPhaseAngle( shortConfirmationValues_t * status, uint8_t phase, angle
 
 uint64_t GetTimeIntegrals( shortConfirmationValues_t * status, uint8_t phase, timeIntegrals_t type )
 {
+    if ( status == (shortConfirmationValues_t*)NULL )
+    {
+        ReportAndExit("GetTimeIntegrals - passed NULL argument!");
+    }
+
     if ( ( type > A_MINUS ) || ( type < A_PLUS ) )
     {
         ReportAndExit("GetTimeIntegrals - passed type to get!");

@@ -15,9 +15,9 @@
 //--------------------------------------------------------------------
 
 //--Private Function Declaration--------------------------------------
-bool IsFileExist( void );
-size_t GetFileSize( void );
-void CreateFile( void );
+static bool IsFileExist( void );
+static size_t GetFileSize( void );
+static void CreateFile( void );
 //--------------------------------------------------------------------
 
 //--File Scope Variables----------------------------------------------
@@ -82,7 +82,7 @@ void RestoreNonVolatileData( void * pData, size_t dataSize )
 
 }
 
-size_t GetFileSize( void )
+static size_t GetFileSize( void )
 {
     struct stat st;
     stat(DATA_FILE_PATH, &st);
@@ -90,7 +90,7 @@ size_t GetFileSize( void )
 }
 
 
-bool IsFileExist( void )
+static bool IsFileExist( void )
 {
     bool retVal = false;
     if( access( DATA_FILE_PATH, F_OK ) != -1 ) 
@@ -101,7 +101,7 @@ bool IsFileExist( void )
     return retVal;
 }
 
-void CreateFile( void )
+static void CreateFile( void )
 {
     pFile = fopen( DATA_FILE_PATH, "wb+");
     if ( pFile == (FILE*)NULL )
