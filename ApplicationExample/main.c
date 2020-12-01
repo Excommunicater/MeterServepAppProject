@@ -33,6 +33,7 @@ typedef struct dataToDisplay
     uint32_t CA1;
     uint32_t CA2;
     uint32_t CA3;
+    uint32_t lostMessages;
 } dataToDisplay_t;
 //--------------------------------------------------------------------
 
@@ -57,7 +58,7 @@ int main( void )
     {
         GetDataFromServer();
         PrintData();
-        sleep(2);
+        usleep(500000);
     }
     return 0;
 }
@@ -108,6 +109,7 @@ static void PrintData( void )
     printf("VOLTAGE ANGLE:      |    %07.3f    |    %07.3f    |    %07.3f    |\r\n", (float)(dataToDisplay.VA1), (float)(dataToDisplay.VA2), (float)(dataToDisplay.VA3));
     printf("CURRENT ANGLE:      |    %07.3f    |    %07.3f    |    %07.3f    |\r\n", (float)(dataToDisplay.CA1), (float)(dataToDisplay.CA2), (float)(dataToDisplay.CA3));
     printf("--------------------------------------------------------------------\r\n");
+    printf("LOST MESSAGES: %i\r\n", dataToDisplay.lostMessages);
 }
 
 static uint32_t GetUniqueRequestId( void )
@@ -121,21 +123,33 @@ static void GetUint32Blocking( attributesToGet_t attribute, uint32_t instance, u
 {
     responseUint32_t responseUint32;
     responseUint32Body_t * pResponseBody = (responseUint32Body_t*)responseUint32.mtext;
-    if ( !SendRequestGetSingle( attribute, instance, serverQueue, applicationQueue, GetUniqueRequestId() ) )
+    uint32_t requestId = GetUniqueRequestId();
+    if ( !SendRequestGetSingle( attribute, instance, serverQueue, applicationQueue, requestId ) )
     {
         ReportAndExit("GetUint32Blocking - Problem sending message...\r\n");
     }
     // Blocking waiting for response
     while ( GetNumberOfMessagesInQueue(applicationQueue) == 0U );
+
     if ( GetMessageFromQueue( (void*)&responseUint32, UINT32_RESPONSE, applicationQueue ) )
     {
         if ( pResponseBody->status != OK )
         {
             ReportAndExit("GetUint32Blocking - Bad status in response...\r\n");
         }
+        else if ( pResponseBody->requestId != requestId )
+        {
+            ReportAndExit("GetUint32Blocking - Segmentation error...\r\n");
+        }
+        
         else
         {
             *pDestination = pResponseBody->value;   
         }
     }
+    else
+    {
+        dataToDisplay.lostMessages++;
+    }
+    
 }

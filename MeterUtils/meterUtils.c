@@ -44,11 +44,16 @@ void ReadStructFromDev( void )
 #elif METER_UTILS_TYPE_OF_DATA_READOUT == NON_BLOCKING_METER_READOUT
     struct pollfd fdarray [1];
     bool isReadNewData = false;
-    int fifoFile = open(DEV_FILE, O_RDONLY|O_NONBLOCK );
+    int fifoFile = open(DEV_FILE, O_RDONLY | O_NONBLOCK );
+
+    if ( fifoFile == -1 )
+    {
+        ReportAndExit( "ReadStructFromDev - error opening the file...\r\n" );
+    }
 
     fdarray[0].fd = fifoFile;
     fdarray[0].events = POLLIN | POLLRDNORM;
-    int rc = poll(fdarray, 1, 1);
+    int rc = poll(fdarray, 1, 10);
     if ( ( rc == 1 ) && ( fdarray[0].revents & POLLRDNORM ) )
     {
         read(fifoFile, &lastReadHardwareRegister, sizeof(meter_hw_registers_t));

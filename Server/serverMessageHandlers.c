@@ -44,14 +44,14 @@ void HandleSingleGetRequest( void )
         {
             case METER_NUMBER:
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::METER_NUMBER rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_METER_NUMBER, OK);
+                    printf("HandleSingleGetRequest::METER_NUMBER                        rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_METER_NUMBER, OK);
                 #endif
                 responseStatus = SendResponseUint32( ATTRIBUTE_METER_NUMBER, OK, responseQueueId, requestId );
                 break;
         
             case METER_SERVER_VERSION:
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::METER_SERVER_VERSION rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_SERVER_VERSION, OK);
+                    printf("HandleSingleGetRequest::METER_SERVER_VERSION                rID = %i i = %i v = %i stat = %i\r\n", requestId, instance, ATTRIBUTE_SERVER_VERSION, OK);
                 #endif
                 responseStatus = SendResponseUint32( ATTRIBUTE_SERVER_VERSION, OK, responseQueueId, requestId );
                 break;
@@ -59,7 +59,7 @@ void HandleSingleGetRequest( void )
             case INSTATNTENOUS_PHASE_VOLTAGE:
                 returnUint32Value = GetInstatntenousPhaseVoltage( &status, instance );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n", requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_VOLTAGE         rID = %i i = %i v = %i stat = %i\r\n", requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
@@ -67,63 +67,63 @@ void HandleSingleGetRequest( void )
             case INSTATNTENOUS_PHASE_CURRENT:
                 returnUint32Value = GetInstatntenousPhaseCurrent( &status, instance );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::INSTATNTENOUS_PHASE_CURRENT         rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case PHASE_TIME_INTEGRAL_A_PLUS:
                 returnUint64Value = GetTimeIntegrals( &status, instance, A_PLUS );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
+                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS          rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
                 #endif
                 responseStatus = SendResponseUint64( returnUint64Value, status, responseQueueId, requestId );
                 break;            
             case PHASE_TIME_INTEGRAL_A_MINUS:
                 returnUint64Value = GetTimeIntegrals( &status, instance, A_PLUS );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
+                    printf("HandleSingleGetRequest::PHASE_TIME_INTEGRAL_A_PLUS          rID = %i i = %i v = %li stat = %i\r\n",  requestId,instance, returnUint64Value, status);
                 #endif
                 responseStatus = SendResponseUint64( returnUint64Value, status, responseQueueId, requestId );
                 break;
             case VOLTAGE_PHASE_ANGLE:
                 returnUint32Value = GetPhaseAngle( &status, instance, ANGLE_VOLTAGE );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::VOLTAGE_PHASE_ANGLE                 rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case CURRENT_PHASE_ANGLE:
                 returnUint32Value = GetPhaseAngle( &status, instance, ANGLE_CURRENT );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::CURRENT_PHASE_ANGLE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::CURRENT_PHASE_ANGLE                 rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case MINIMUM_PHASE_VOLTAGE:
                 returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_VOLTAGE, ANGLE_MIN );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::MINIMUM_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::MINIMUM_PHASE_VOLTAGE               rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case MAXIMUM_PHASE_VOLTAGE:
                 returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_VOLTAGE, ANGLE_MAX );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_VOLTAGE rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_VOLTAGE               rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case MINIMUM_PHASE_CURRENT:
                 returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_CURRENT, ANGLE_MIN );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::MINIMUM_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::MINIMUM_PHASE_CURRENT               rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
             case MAXIMUM_PHASE_CURRENT:
                 returnUint32Value = GetMinMaxPhaseValue( &status, instance, ANGLE_CURRENT, ANGLE_MAX );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_CURRENT rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
+                    printf("HandleSingleGetRequest::MAXIMUM_PHASE_CURRENT               rID = %i i = %i v = %i stat = %i\r\n",  requestId,instance, returnUint32Value, status);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, status, responseQueueId, requestId );
                 break;
@@ -131,7 +131,7 @@ void HandleSingleGetRequest( void )
             case NUMBER_OF_SUBSCRIPTION:
                 returnUint32Value = GetNumberOfSubscriptions();
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::NUMBER_OF_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                    printf("HandleSingleGetRequest::NUMBER_OF_SUBSCRIPTION              rID = %i v = %i\r\n", requestId, returnUint32Value);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
                 break;
@@ -139,7 +139,7 @@ void HandleSingleGetRequest( void )
             case NUMBER_OF_ACTIVE_SUBSCRIPTION:
                 returnUint32Value = GetNumberOfActiveSubscriptions();
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleGetRequest::NUMBER_OF_ACTIVE_SUBSCRIPTION rID = %i v = %i\r\n", requestId, returnUint32Value);
+                    printf("HandleSingleGetRequest::NUMBER_OF_ACTIVE_SUBSCRIPTION       rID = %i v = %i\r\n", requestId, returnUint32Value);
                 #endif
                 responseStatus = SendResponseUint32( returnUint32Value, OK, responseQueueId, requestId );
                 break;
@@ -182,14 +182,14 @@ void HandleSingleSetRequest( void )
                 status = SetVoltageThresehold( instance, UNDERVOLTAGE, valueToSet );
 
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSingleSetRequest::UNDER_VOLTAGE_THRESEHOLD rID = %i v = i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleSingleSetRequest::UNDER_VOLTAGE_THRESEHOLD            rID = %i v = i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case OVER_VOLTAGE_THRESEHOLD:
                 status = SetVoltageThresehold( instance, OVERVOLTAGE, valueToSet );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::OVER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::OVER_VOLTAGE_THRESEHOLD                 rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
@@ -228,56 +228,56 @@ void HandleResetRequest( void )
             case RESET_MINIMUM_PHASE_VOLTAGE:
                 status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MIN );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_VOLTAGE             rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case RESET_MAXIMUM_PHASE_VOLTAGE:
                 status = ResetMinMaxPhaseValue( instance, ANGLE_VOLTAGE, ANGLE_MAX );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_VOLTAGE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_VOLTAGE             rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case RESET_MINIMUM_PHASE_CURRENT:
                 status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_MINIMUM_PHASE_CURRENT             rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case RESET_MAXIMUM_PHASE_CURRENT:
                 status = ResetMinMaxPhaseValue( instance, ANGLE_CURRENT, ANGLE_MIN );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_CURRENT rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_MAXIMUM_PHASE_CURRENT             rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case RESET_UNDER_VOLTAGE_THRESEHOLD:
                 status = ResetVoltageThresehold( instance, UNDERVOLTAGE );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_UNDER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_UNDER_VOLTAGE_THRESEHOLD          rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case RESET_OVER_VOLTAGE_THRESEHOLD:
                 status = ResetVoltageThresehold( instance, OVERVOLTAGE );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::RESET_OVER_VOLTAGE_THRESEHOLD rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::RESET_OVER_VOLTAGE_THRESEHOLD           rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case UNSUBSCRIBE:
                 status = Unsubscribe( instance );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::UNSUBSCRIBE rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleResetRequest::UNSUBSCRIBE                             rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
             case UNSUBSCRIBE_ALL:
                 status = UnsubscribeAll();
                 #ifdef MH_DBG_PRNT
-                    printf("HandleResetRequest::UNSUBSCRIBE_ALL rID = %i stat = %i\r\n", requestId, status);
+                    printf("HandleResetRequest::UNSUBSCRIBE_ALL                         rID = %i stat = %i\r\n", requestId, status);
                 #endif
                 responseStatus = SendResponseShortConfirmation( status, responseQueueId, requestId );
                 break;
@@ -318,14 +318,14 @@ void HandleSubscriptionRequest( void )
             case UNDER_VOLTAGE_SUBSCRIPTION:
                 status = RegisterSubscription( instance, UNDERVOLTAGE, &notificationId, responseQueueId );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleSubscriptionRequest::UNDER_VOLTAGE_SUBSCRIPTION       rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseSubscription( status, notificationId, responseQueueId, requestId );
                 break;
             case OVER_VOLTAGE_SUBSCRIPTION:
                 status = RegisterSubscription( instance, OVERVOLTAGE, &notificationId, responseQueueId );
                 #ifdef MH_DBG_PRNT
-                    printf("HandleSubscriptionRequest::OVER_VOLTAGE_SUBSCRIPTION rID = %i i = %i stat = %i\r\n", requestId, instance, status);
+                    printf("HandleSubscriptionRequest::OVER_VOLTAGE_SUBSCRIPTION        rID = %i i = %i stat = %i\r\n", requestId, instance, status);
                 #endif
                 responseStatus = SendResponseSubscription( status, notificationId, responseQueueId, requestId );
                 break;

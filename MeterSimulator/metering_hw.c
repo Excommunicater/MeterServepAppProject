@@ -22,7 +22,6 @@ int main() {
 
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     mkfifo(DEV_FILE, 0666);
-    
 
     while (1)
     {
@@ -43,7 +42,7 @@ int main() {
         hwregs.current_angles[2] = 120 - secs_since_start % 30;
         hwregs.current_angles[0] = 240 - hwregs.current_angles[2];
         
-        int fd = open(DEV_FILE, O_WRONLY);
+        int fd = open(DEV_FILE, O_WRONLY|O_NONBLOCK);
         write(fd, &hwregs, sizeof(hwregs));
         close(fd);
 
