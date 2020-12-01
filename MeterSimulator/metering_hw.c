@@ -26,7 +26,6 @@ int main() {
 
     while (1)
     {
-        int fd = open(DEV_FILE, O_WRONLY);
         clock_gettime(CLOCK_MONOTONIC, &tnow);
         const int32_t secs_since_start = tnow.tv_sec - tstart.tv_sec;
 
@@ -43,7 +42,8 @@ int main() {
         hwregs.current_angles[1] = 120;
         hwregs.current_angles[2] = 120 - secs_since_start % 30;
         hwregs.current_angles[0] = 240 - hwregs.current_angles[2];
-
+        
+        int fd = open(DEV_FILE, O_WRONLY);
         write(fd, &hwregs, sizeof(hwregs));
         close(fd);
 
