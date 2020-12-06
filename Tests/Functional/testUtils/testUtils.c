@@ -391,7 +391,5 @@ int TestUtilGetAndPrepareTestQueue( const char * testPath )
 
 int TestUtilGetServerQueue( void )
 {
-    int serverQueue = InitMessageQueue( SERVER_PATH_NAME );
-    CleanQueue(serverQueue);
-    return serverQueue;
+    return InitMessageQueue( SERVER_PATH_NAME );
 }
